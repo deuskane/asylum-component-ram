@@ -6,7 +6,7 @@
 -- Author     : mrosiere
 -- Company    : 
 -- Created    : 2016-11-11
--- Last update: 2017-03-14
+-- Last update: 2025-01-18
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -69,15 +69,25 @@ begin  -- rtl
 
   transition: process (clk_i)
   begin  -- process transition
-    if (clk_i'event and clk_i = '1') then  -- rising clk_i edge
-      if (cke_i = '1') then
-        if (we_i = '1') then
+    if (clk_i'event and clk_i = '1')
+    then  -- rising clk_i edge
+      if (cke_i = '1')
+      then
+        if (we_i = '1')
+        then
           ram_r (waddr) <= wdata_i;
         end if;
+
+        -- Synchronous Read
+        --if (re_i = '1')
+        --then
+        --  rdata_o <= ram_r(raddr);
+        --end if;
       end if;
     end if;
   end process transition;
 
+  -- Asynchronous Read
   rdata_o <= ram_r(raddr);
   
 end rtl;
