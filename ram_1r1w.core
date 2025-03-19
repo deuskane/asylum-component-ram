@@ -30,7 +30,7 @@ filesets:
       - src/ram_1r1w.vhd
     file_type : vhdlSource
     depend :
-      - ">=asylum:package:math_pkg:1.0.0"
+      - asylum:utils:pkg
       
   #---------------------------------------
   # Testbench Files
