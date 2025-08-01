@@ -26,8 +26,8 @@ filesets:
   #---------------------------------------
   files_hdl:
     files:
-      - src/ram_1r1w_pkg.vhd
-      - src/ram_1r1w.vhd
+      - hdl/ram_1r1w_pkg.vhd
+      - hdl/ram_1r1w.vhd
     file_type : vhdlSource
     depend :
       - asylum:utils:pkg
