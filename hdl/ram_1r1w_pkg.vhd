@@ -6,7 +6,7 @@
 -- Author     : mrosiere
 -- Company    : 
 -- Created    : 2016-11-11
--- Last update: 2017-03-14
+-- Last update: 2025-08-01
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -28,8 +28,9 @@ package ram_1r1w_pkg is
 
   component ram_1r1w is
     generic (
-      WIDTH : natural;
-      DEPTH : natural
+      WIDTH     : natural;
+      DEPTH     : natural;
+      SYNC_READ : boolean:= false
       );
     port (
       clk_i        : in  std_logic;

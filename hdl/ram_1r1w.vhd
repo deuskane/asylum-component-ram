@@ -6,7 +6,7 @@
 -- Author     : mrosiere
 -- Company    : 
 -- Created    : 2016-11-11
--- Last update: 2025-01-18
+-- Last update: 2025-08-01
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -32,8 +32,9 @@ use work.math_pkg.all;
 entity ram_1r1w is
   -- =====[ Interfaces ]==========================
   generic (
-    WIDTH : natural := 32;
-    DEPTH : natural := 32
+    WIDTH     : natural := 32;
+    DEPTH     : natural := 32;
+    SYNC_READ : boolean := false
     );
   port (
     clk_i        : in  std_logic;
@@ -77,17 +78,36 @@ begin  -- rtl
         then
           ram_r (waddr) <= wdata_i;
         end if;
-
-        -- Synchronous Read
-        --if (re_i = '1')
-        --then
-        --  rdata_o <= ram_r(raddr);
-        --end if;
       end if;
     end if;
   end process transition;
 
-  -- Asynchronous Read
-  rdata_o <= ram_r(raddr);
+  gen_sync_read: if SYNC_READ = true
+  generate
+    
+    sync_read: process (clk_i)
+    begin  -- process transition
+      if (clk_i'event and clk_i = '1')
+      then  -- rising clk_i edge
+        if (cke_i = '1')
+        then
+          -- Synchronous Read
+          if (re_i = '1')
+          then
+            rdata_o <= ram_r(raddr);
+          end if;
+        end if;
+      end if;
+    end process sync_read;
+
+  end generate gen_sync_read;
+
+  gen_async_read: if SYNC_READ = false
+  generate
+    -- Asynchronous Read
+    rdata_o <= ram_r(raddr);
+
+  end generate gen_async_read;
+  
   
 end rtl;
