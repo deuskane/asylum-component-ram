@@ -6,7 +6,7 @@
 -- Author     : mrosiere
 -- Company    : 
 -- Created    : 2016-11-11
--- Last update: 2025-08-01
+-- Last update: 2025-08-02
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -57,6 +57,7 @@ architecture rtl of ram_1r1w is
 
   -- =====[ Registers ]===========================
   signal ram_r  : ram_t;
+  signal rdata_r: std_logic_vector(WIDTH-1 downto 0);
   
   -- =====[ Signals ]=============================
   signal raddr  : integer range 0 to DEPTH-1;
@@ -68,7 +69,7 @@ begin  -- rtl
   raddr  <= to_integer(unsigned(raddr_i));
   waddr  <= to_integer(unsigned(waddr_i));
 
-  transition: process (clk_i)
+  process (clk_i)
   begin  -- process transition
     if (clk_i'event and clk_i = '1')
     then  -- rising clk_i edge
@@ -80,12 +81,12 @@ begin  -- rtl
         end if;
       end if;
     end if;
-  end process transition;
+  end process;
 
   gen_sync_read: if SYNC_READ = true
   generate
     
-    sync_read: process (clk_i)
+    process (clk_i)
     begin  -- process transition
       if (clk_i'event and clk_i = '1')
       then  -- rising clk_i edge
@@ -94,12 +95,14 @@ begin  -- rtl
           -- Synchronous Read
           if (re_i = '1')
           then
-            rdata_o <= ram_r(raddr);
+            rdata_r <= ram_r(raddr);
           end if;
         end if;
       end if;
-    end process sync_read;
+    end process;
 
+    rdata_o <= rdata_r;
+    
   end generate gen_sync_read;
 
   gen_async_read: if SYNC_READ = false
