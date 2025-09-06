@@ -1,10 +1,10 @@
 CAPI=2:
 
 #-----------------------------------------------------------------------------
-# Title      : Ram 1 read port and 1 write port Core file
+# Title      : Ram Core file
 # Project    : Asylum
 #-----------------------------------------------------------------------------
-# File       : ram_1r1w.core
+# File       : ram.core
 # Author     : mrosiere
 #-----------------------------------------------------------------------------
 # Description: 
@@ -18,7 +18,7 @@ CAPI=2:
 # 2025-09-05  1.1.1    mrosiere Add Package
 #-----------------------------------------------------------------------------
 
-name        : asylum:component:ram_1r1w:1.0.1
+name        : asylum:component:ram:1.0.1
 description : RAM with 1 read port and 1 write port
 
 filesets:
@@ -28,7 +28,7 @@ filesets:
   #---------------------------------------
   files_hdl:
     files:
-      - hdl/ram_1r1w_pkg.vhd
+      - hdl/ram_pkg.vhd
       - hdl/ram_1r1w.vhd
     file_type : vhdlSource
     depend :
