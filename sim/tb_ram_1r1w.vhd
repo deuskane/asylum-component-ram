@@ -6,7 +6,7 @@
 -- Author     : mrosiere
 -- Company    : 
 -- Created    : 2016-11-11
--- Last update: 2021-08-29
+-- Last update: 2025-09-07
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -28,9 +28,9 @@ use ieee.numeric_std.all;
 --use ieee.numeric_bit.all;
 --use ieee.std_logic_arith.all;
 
-library work;
-use work.math_pkg.all;
-use work.ram_1r1w_pkg.all;
+library asylum;
+use     asylum.math_pkg.all;
+use     asylum.ram_pkg.all;
 
 entity tb_ram_1r1w is
 

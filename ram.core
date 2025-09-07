@@ -30,7 +30,8 @@ filesets:
     files:
       - hdl/ram_pkg.vhd
       - hdl/ram_1r1w.vhd
-    file_type : vhdlSource
+    file_type    : vhdlSource
+    logical_name : asylum
     depend :
       - asylum:utils:pkg
       
@@ -54,7 +55,7 @@ targets:
     toplevel        : ram_1r1w
     default_tool    : ghdl
 
-  sim:
+  sim_basic:
     << : *default
     description     : Simulation of all cases
     filesets_append :
