@@ -39,7 +39,6 @@ entity ram_1r1w is
   port (
     clk_i        : in  std_logic;
     cke_i        : in  std_logic;
---  arstn_i      : in  std_logic;
     -- MEM_READ
     re_i         : in  std_logic;
     raddr_i      : in  std_logic_vector(log2(DEPTH) -1 downto 0);
@@ -56,7 +55,6 @@ architecture rtl of ram_1r1w is
   type ram_t is array (DEPTH-1 downto 0) of std_logic_vector(WIDTH -1 downto 0);
 
   -- =====[ Registers ]===========================
---signal ram_r  : ram_t  := (others => (others => '0'));
   signal ram_r  : ram_t;
   signal rdata_r: std_logic_vector(WIDTH-1 downto 0);
   
