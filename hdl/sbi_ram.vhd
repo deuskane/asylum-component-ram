@@ -49,6 +49,9 @@ architecture rtl of sbi_ram is
 
     constant ADDR_WIDTH : natural := log2(DEPTH);
 
+    signal ready_r : std_logic;
+    signal ready   : std_logic;
+
 begin
 
     -- -------------------------------------------------------------------------
@@ -82,20 +85,22 @@ begin
         process (clk_i, arst_b_i)
         begin
             if arst_b_i = '0' then
-                sbi_tgt_o.ready <= '0';
+                ready_r <= '0';
             elsif rising_edge(clk_i) then
-                -- ready when chip select and read enable are asserted
-                sbi_tgt_o.ready <= sbi_ini_i.cs and sbi_ini_i.re;
+                ready_r <= sbi_ini_i.cs and not ready_r; -- ready goes high one cycle after cs is asserted
             end if;
         end process;
+
+        ready <= ready_r;
     end generate gen_sync_ready;
 
     -- for asynchronous read mode
     gen_async_ready: if SYNC_READ = false
     generate
-        -- ready when chip select and read enable are asserted
-        sbi_tgt_o.ready <= sbi_ini_i.cs and sbi_ini_i.re; 
+        ready <= sbi_ini_i.cs;
     end generate gen_async_ready; 
+
+    sbi_tgt_o.ready <= ready; 
 
     -- -------------------------------------------------------------------------
     -- Target information
