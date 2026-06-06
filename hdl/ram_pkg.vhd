@@ -49,6 +49,7 @@ end component ram_1rw;
 
 component sbi_ram is
     generic (
+        NAME       : string  := "";
         DEPTH      : natural := 256;
         SYNC_READ  : boolean := false
     );

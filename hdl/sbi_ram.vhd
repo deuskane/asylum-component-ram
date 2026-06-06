@@ -32,6 +32,7 @@ use asylum.sbi_pkg.all;
 -- RAM wrapper entity with SBI interface
 entity sbi_ram is
     generic (
+        NAME       : string  := "";
         DEPTH      : natural := 256;
         SYNC_READ  : boolean := false
     );
@@ -105,6 +106,14 @@ begin
     -- -------------------------------------------------------------------------
     -- Target information
     -- -------------------------------------------------------------------------
-    sbi_tgt_o.info.name <= to_sbi_name("RAM");
+    gen_info: if NAME /= "" 
+    generate
+        sbi_tgt_o.info.name <= to_sbi_name(NAME);
+    end generate gen_info;
+
+    gen_info_default: if NAME = "" 
+    generate
+        sbi_tgt_o.info.name <= to_sbi_name("RAM"&to_string(DEPTH)&"B");
+    end generate gen_info_default;
 
 end architecture rtl;
