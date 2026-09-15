@@ -18,9 +18,10 @@ CAPI=2:
 # 2025-09-05  1.1.1    mrosiere Add Package
 # 2026-05-16  1.2.0    mrosiere Add ram_1rw and sbi_ram_1rw
 # 2026-06-06  1.2.1    mrosiere Add Name
+# 2026-09-15  1.2.2    mrosiere Add ram_2r1w
 #-----------------------------------------------------------------------------
 
-name        : asylum:component:ram:1.2.1
+name        : asylum:component:ram:1.2.2
 description : RAM with 1 read port and 1 write port
 
 filesets:
@@ -32,6 +33,7 @@ filesets:
     files:
       - hdl/ram_pkg.vhd
       - hdl/ram_1r1w.vhd
+      - hdl/ram_2r1w.vhd
       - hdl/ram_1rw.vhd
       - hdl/sbi_ram.vhd
     file_type    : vhdlSource

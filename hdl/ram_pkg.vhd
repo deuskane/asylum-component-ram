@@ -47,6 +47,31 @@ component ram_1rw is
     );
 end component ram_1rw;
 
+component ram_2r1w is
+  -- =====[ Interfaces ]==========================
+  generic (
+    WIDTH     : natural := 32;
+    DEPTH     : natural := 32;
+    SYNC_READ : boolean := false
+    );
+  port (
+    clk_i        : in  std_logic;
+    cke_i        : in  std_logic;
+    -- MEM_READ
+    re0_i        : in  std_logic;
+    raddr0_i     : in  std_logic_vector(log2(DEPTH) -1 downto 0);
+    rdata0_o     : out std_logic_vector(WIDTH       -1 downto 0);
+
+    re1_i        : in  std_logic;
+    raddr1_i     : in  std_logic_vector(log2(DEPTH) -1 downto 0);
+    rdata1_o     : out std_logic_vector(WIDTH       -1 downto 0);
+    -- MEM_WRITE
+    we_i         : in  std_logic;
+    waddr_i      : in  std_logic_vector(log2(DEPTH) -1 downto 0);
+    wdata_i      : in  std_logic_vector(WIDTH       -1 downto 0)    
+    );
+end component ram_2r1w;
+
 component sbi_ram is
     generic (
         NAME       : string  := "";
