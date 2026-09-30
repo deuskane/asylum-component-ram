@@ -1,3 +1,5 @@
+[![CI](https://github.com/deuskane/asylum-component-ram/actions/workflows/ci.yml/badge.svg)](https://github.com/deuskane/asylum-component-ram/actions/workflows/ci.yml)
+
 # Asylum RAM Component
 
 ## Table of Contents
