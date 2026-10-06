@@ -16,10 +16,9 @@
 -- Revisions  :
 -- Date        Version  Author   Description
 -- 2026-09-15  1.0      mrosiere Created
+-- 2026-10-05  1.1      mrosiere Remove unused std.textio, assert DEPTH is a
+--                               power of 2
 -------------------------------------------------------------------------------
-
-library std;
-use     std.textio.all;
 
 library ieee;
 use     ieee.std_logic_1164.all;
@@ -122,4 +121,12 @@ begin  -- rtl
     rdata1_o <= ram_r(raddr1);
   end generate gen_async_read;
   
+-- pragma translate_off
+  -- The address width is log2(DEPTH) (floor): with a DEPTH that is not a power
+  -- of 2, the words 2**log2(DEPTH) to DEPTH-1 can not be addressed
+  assert 2**log2(DEPTH) = DEPTH
+    report "ram_2r1w: DEPTH (" & integer'image(DEPTH) & ") is not a power of 2, only " & integer'image(2**log2(DEPTH)) & " words are addressable"
+    severity error;
+-- pragma translate_on
+
 end rtl;

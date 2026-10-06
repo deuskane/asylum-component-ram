@@ -17,6 +17,7 @@
 -- Revisions  :
 -- Date        Version  Author  Description
 -- 2026-05-16  1.0      mrosiere Created
+-- 2026-10-05  1.1      mrosiere Assert DEPTH is a power of 2 (rounded down)
 -------------------------------------------------------------------------------
 
 library ieee;
@@ -115,5 +116,17 @@ begin
     generate
         sbi_tgt_o.info.name <= to_sbi_name("RAM"&to_string(DEPTH)&"B");
     end generate gen_info_default;
+
+    -- -------------------------------------------------------------------------
+    -- Configuration check
+    -- -------------------------------------------------------------------------
+-- pragma translate_off
+    -- The RAM has 2**log2(DEPTH) words (DEPTH rounded down to a power of 2,
+    -- to match the address width): with a DEPTH that is not a power of 2 the
+    -- words 2**log2(DEPTH) to DEPTH-1 do not exist
+    assert 2**ADDR_WIDTH = DEPTH
+        report "sbi_ram: DEPTH (" & integer'image(DEPTH) & ") is not a power of 2, the RAM is rounded down to " & integer'image(2**ADDR_WIDTH) & " words"
+        severity error;
+-- pragma translate_on
 
 end architecture rtl;

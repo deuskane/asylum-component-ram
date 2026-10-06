@@ -1,3 +1,6 @@
-default   : Default Target
-sim_basic : Simulation of all cases
+default               : Default Target
+sim_16x8b_async_read  : All RAMs and sbi_ram, synchronous read (WIDTH=8, DEPTH=16)
+sim_16x8b_sync_read   : All RAMs and sbi_ram, asynchronous read (WIDTH=8, DEPTH=16)
+sim_64x32b_async_read : All RAMs and sbi_ram, synchronous read (WIDTH=32, DEPTH=64)
+sim_64x32b_sync_read  : All RAMs and sbi_ram, asynchronous read (WIDTH=32, DEPTH=64)
 
