@@ -9,7 +9,18 @@
 -- Last update: 2026-09-15
 -- Platform   : 
 -------------------------------------------------------------------------------
--- Description: 
+-- Description: RAM with 2 read ports and 1 write port
+--              Read during write (SYNC_READ = true) : a read and a write of
+--              the same address on the same enabled edge return the OLD word
+--              (read-first). This is the RTL / simulation contract (checked
+--              by tb_ram). On a target, the inferred block RAM must keep it :
+--              check the collision mode chosen by the synthesis tool (e.g.
+--              NX_RAM in the nxmap report), many dual-port blocks are
+--              write-first or undefined on a collision. A design that must
+--              not depend on it avoids same-address read/write or adds its
+--              own bypass (see fifo_sync).
+--              SYNC_READ = false : the read is combinational, the written
+--              word is visible right after the edge.
 -------------------------------------------------------------------------------
 -- Copyright (c) 2026
 -------------------------------------------------------------------------------
