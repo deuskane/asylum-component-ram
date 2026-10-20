@@ -39,7 +39,7 @@ filesets:
       - hdl/ram_2r1w.vhd
       - hdl/ram_1rw.vhd
       - hdl/sbi_ram.vhd
-    file_type    : vhdlSource
+    file_type    : vhdlSource-2008
     logical_name : asylum
     depend :
       - asylum:utils:pkg
