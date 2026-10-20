@@ -228,20 +228,20 @@ This IP has no software-visible registers. `sbi_ram` is memory-mapped storage wi
 | Target | Toplevel | Description |
 |--------|----------|-------------|
 | `default` | `ram_1r1w` | HDL fileset only (not a simulation) |
-| `sim_basic` | `tb_ram` | All RAMs and `sbi_ram`, asynchronous read (`WIDTH=8`, `DEPTH=16`, `SYNC_READ=false`) |
-| `sim_sync_read` | `tb_ram` | All RAMs and `sbi_ram`, synchronous read (`WIDTH=8`, `DEPTH=16`, `SYNC_READ=true`) |
-| `sim_wide_async_read` | `tb_ram` | All RAMs and `sbi_ram`, asynchronous read (`WIDTH=32`, `DEPTH=64`, `SYNC_READ=false`) |
-| `sim_wide_sync_read` | `tb_ram` | All RAMs and `sbi_ram`, synchronous read (`WIDTH=32`, `DEPTH=64`, `SYNC_READ=true`) |
+| `sim_16x8b_async_read` | `tb_ram` | All RAMs and `sbi_ram`, asynchronous read (`WIDTH=8`, `DEPTH=16`, `SYNC_READ=false`) |
+| `sim_16x8b_sync_read` | `tb_ram` | All RAMs and `sbi_ram`, synchronous read (`WIDTH=8`, `DEPTH=16`, `SYNC_READ=true`) |
+| `sim_64x32b_async_read` | `tb_ram` | All RAMs and `sbi_ram`, asynchronous read (`WIDTH=32`, `DEPTH=64`, `SYNC_READ=false`) |
+| `sim_64x32b_sync_read` | `tb_ram` | All RAMs and `sbi_ram`, synchronous read (`WIDTH=32`, `DEPTH=64`, `SYNC_READ=true`) |
 
 The `.core` parameters `WIDTH` (int, 8), `DEPTH` (int, 16) and `SYNC_READ` (bool, false) are the testbench generics set by the `sim_*` targets (`DEPTH` must be a power of 2, at least 16).
 
 ### How to Run
 
-The default tool is GHDL (`mk/defs.mk`: `TOOL ?= ghdl`, `TARGET ?= sim_basic`).
+The default tool is GHDL (`mk/defs.mk`: `TOOL ?= ghdl`, `TARGET ?= sim_16x8b_sync_read`).
 
 ```bash
 make help                 # variables, rules and target list (mk/targets.txt)
-make sim_basic            # run one target (log in log/)
+make sim_16x8b_sync_read  # run one target (log in log/)
 make nonreg_sim           # run every sim_* target
 make clean                # remove build/
 ```
@@ -249,7 +249,7 @@ make clean                # remove build/
 Equivalent FuseSoC command:
 
 ```bash
-fusesoc --cores-root . run --build-root build --target sim_basic asylum:component:ram:1.2.3
+fusesoc --cores-root . run --build-root build --target sim_16x8b_sync_read asylum:component:ram:1.2.3
 ```
 
 ### Simulation Features
@@ -300,7 +300,7 @@ asylum-component-ram/
 │   └── sbi_ram.vhd
 ├── sim/
 │   └── tb_ram.vhd          # UVVM testbench (all RAMs, sbi_ram)
-└── .github/workflows/ci.yml  # CI (sim_basic, sim_sync_read, sim_wide_async_read, sim_wide_sync_read)
+└── .github/workflows/ci.yml  # CI (sim_16x8b_*_read, sim_64x32b_*_read)
 ```
 
 ## Dependencies

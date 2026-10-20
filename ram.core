@@ -68,22 +68,6 @@ targets:
 
   sim_16x8b_sync_read:
     << : *default
-    description     : All RAMs and sbi_ram, asynchronous read (WIDTH=8, DEPTH=16)
-    filesets_append :
-      - files_sim
-    toplevel        : tb_ram
-    parameters      :
-      - WIDTH=8
-      - DEPTH=16
-      - SYNC_READ=false
-    default_tool    : ghdl
-    tools :
-      ghdl :
-        analyze_options : ["-Wall","-fsynopsys","-frelaxed","--no-vital-checks"]
-        run_options     : ["--fst=dut.fst","--ieee-asserts=disable"]
-
-  sim_16x8b_async_read:
-    << : *default
     description     : All RAMs and sbi_ram, synchronous read (WIDTH=8, DEPTH=16)
     filesets_append :
       - files_sim
@@ -98,15 +82,15 @@ targets:
         analyze_options : ["-Wall","-fsynopsys","-frelaxed","--no-vital-checks"]
         run_options     : ["--fst=dut.fst","--ieee-asserts=disable"]
 
-  sim_64x32b_sync_read:
+  sim_16x8b_async_read:
     << : *default
-    description     : All RAMs and sbi_ram, asynchronous read (WIDTH=32, DEPTH=64)
+    description     : All RAMs and sbi_ram, asynchronous read (WIDTH=8, DEPTH=16)
     filesets_append :
       - files_sim
     toplevel        : tb_ram
     parameters      :
-      - WIDTH=32
-      - DEPTH=64
+      - WIDTH=8
+      - DEPTH=16
       - SYNC_READ=false
     default_tool    : ghdl
     tools :
@@ -114,7 +98,7 @@ targets:
         analyze_options : ["-Wall","-fsynopsys","-frelaxed","--no-vital-checks"]
         run_options     : ["--fst=dut.fst","--ieee-asserts=disable"]
 
-  sim_64x32b_async_read:
+  sim_64x32b_sync_read:
     << : *default
     description     : All RAMs and sbi_ram, synchronous read (WIDTH=32, DEPTH=64)
     filesets_append :
@@ -124,6 +108,22 @@ targets:
       - WIDTH=32
       - DEPTH=64
       - SYNC_READ=true
+    default_tool    : ghdl
+    tools :
+      ghdl :
+        analyze_options : ["-Wall","-fsynopsys","-frelaxed","--no-vital-checks"]
+        run_options     : ["--fst=dut.fst","--ieee-asserts=disable"]
+
+  sim_64x32b_async_read:
+    << : *default
+    description     : All RAMs and sbi_ram, asynchronous read (WIDTH=32, DEPTH=64)
+    filesets_append :
+      - files_sim
+    toplevel        : tb_ram
+    parameters      :
+      - WIDTH=32
+      - DEPTH=64
+      - SYNC_READ=false
     default_tool    : ghdl
     tools :
       ghdl :
