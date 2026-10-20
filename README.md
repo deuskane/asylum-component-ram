@@ -232,6 +232,8 @@ This IP has no software-visible registers. `sbi_ram` is memory-mapped storage wi
 | `sim_sync_read` | `tb_ram` | All RAMs and `sbi_ram`, synchronous read (`WIDTH=8`, `DEPTH=16`, `SYNC_READ=true`) |
 | `sim_wide_async_read` | `tb_ram` | All RAMs and `sbi_ram`, asynchronous read (`WIDTH=32`, `DEPTH=64`, `SYNC_READ=false`) |
 | `sim_wide_sync_read` | `tb_ram` | All RAMs and `sbi_ram`, synchronous read (`WIDTH=32`, `DEPTH=64`, `SYNC_READ=true`) |
+| `lint_ghdl` | `ram_synth_top` | Lint: GHDL `-Wall` analysis and elaboration (empty simulation) of `ram_1r1w`, `ram_2r1w`, `ram_1rw` and `sbi_ram` in a wrapper with flat ports (`syn/ghdl/ram_synth_top.vhd`) |
+| `lint_ghdl_synth` | `ram_synth_top` | Synthesis check: `lint_ghdl`, then `ghdl --synth -Wall` of 5 configurations (`syn/ghdl/ghdl_synth.sh`: `WIDTH x DEPTH` 32x32 (defaults) / 16x8 with `SYNC_READ` false / true, 256x8 with `SYNC_READ = true`), fails on a synthesis error or an inferred latch |
 
 The `.core` parameters `WIDTH` (int, 8), `DEPTH` (int, 16) and `SYNC_READ` (bool, false) are the testbench generics set by the `sim_*` targets (`DEPTH` must be a power of 2, at least 16).
 
@@ -243,6 +245,8 @@ The default tool is GHDL (`mk/defs.mk`: `TOOL ?= ghdl`, `TARGET ?= sim_basic`).
 make help                 # variables, rules and target list (mk/targets.txt)
 make sim_basic            # run one target (log in log/)
 make nonreg_sim           # run every sim_* target
+make lint_ghdl            # GHDL -Wall lint (make nonreg_lint: every lint_* target)
+make lint_ghdl_synth      # GHDL -Wall lint + ghdl --synth -Wall check
 make clean                # remove build/
 ```
 
@@ -259,7 +263,7 @@ fusesoc --cores-root . run --build-root build --target sim_basic asylum:componen
 
 ## Synthesis
 
-No dedicated synthesis target. The HDL of the `default` target is synthesizable: the only simulation-only construct is the `DEPTH` power-of-2 assertion, enclosed in `pragma translate_off / translate_on` (no `textio`, file access or `wait`). The memory array is a plain signal array without reset, written synchronously, so it is inferred as RAM:
+No vendor synthesis target (`lint_ghdl_synth` checks the RTL with `ghdl --synth`, see [Targets](#targets)). The HDL of the `default` target is synthesizable: the only simulation-only construct is the `DEPTH` power-of-2 assertion, enclosed in `pragma translate_off / translate_on` (no `textio`, file access or `wait`). The memory array is a plain signal array without reset, written synchronously, so it is inferred as RAM:
 
 - `SYNC_READ = true`: registered read port(s), suitable for block RAM.
 - `SYNC_READ = false`: asynchronous read, which maps to distributed / LUT RAM or registers.
@@ -300,6 +304,9 @@ asylum-component-ram/
 │   └── sbi_ram.vhd
 ├── sim/
 │   └── tb_ram.vhd          # UVVM testbench (all RAMs, sbi_ram)
+├── syn/ghdl/
+│   ├── ram_synth_top.vhd   # Lint / synthesis check top (all RAMs, flat ports)
+│   └── ghdl_synth.sh       # ghdl --synth check (post_run hook of lint_ghdl_synth)
 └── .github/workflows/ci.yml  # CI (sim_basic, sim_sync_read, sim_wide_async_read, sim_wide_sync_read)
 ```
 

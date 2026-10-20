@@ -54,6 +54,15 @@ filesets:
     depend    :
       - bitvis:verification:uvvm
 
+  #---------------------------------------
+  # Lint Files (lint top + post_run hook of lint_ghdl_synth)
+  #---------------------------------------
+  files_lint:
+    files:
+      - syn/ghdl/ram_synth_top.vhd
+      - syn/ghdl/ghdl_synth.sh : {file_type : user, copyto : ghdl_synth.sh}
+    file_type : vhdlSource-2008
+
 targets:
 
   #---------------------------------------
@@ -65,6 +74,35 @@ targets:
       - files_hdl
     toplevel        : ram_1r1w
     default_tool    : ghdl
+
+  #---------------------------------------
+  # Lint : -Wall analysis and elaboration (empty simulation)
+  #---------------------------------------
+  lint_ghdl :
+    << : *default
+    description     : Lint with GHDL (-Wall analysis and elaboration of ram_synth_top, all RAMs)
+    toplevel        : ram_synth_top
+    filesets_append : [files_lint]
+    default_tool    : ghdl
+    tools :
+      ghdl :
+        analyze_options : ["-Wall"]
+
+  #---------------------------------------
+  # Synthesis check : lint_ghdl, then ghdl --synth -Wall of ram_synth_top
+  # for each configuration of syn/ghdl/ghdl_synth.sh (post_run hook)
+  #---------------------------------------
+  lint_ghdl_synth :
+    << : *default
+    description     : Synthesis check, ghdl --synth -Wall of ram_synth_top, all RAMs (5 configurations)
+    toplevel        : ram_synth_top
+    filesets_append : [files_lint]
+    default_tool    : ghdl
+    tools :
+      ghdl :
+        analyze_options : ["-Wall"]
+    hooks :
+      post_run : [ghdl_synth]
 
   sim_16x8b_sync_read:
     << : *default
@@ -129,6 +167,14 @@ targets:
       ghdl :
         analyze_options : ["-Wall","-fsynopsys","-frelaxed","--no-vital-checks"]
         run_options     : ["--fst=dut.fst","--ieee-asserts=disable"]
+
+scripts:
+
+  #---------------------------------------
+  # Hook of lint_ghdl_synth (cwd = work_root)
+  #---------------------------------------
+  ghdl_synth :
+    cmd : [bash, ghdl_synth.sh]
 
 parameters :
 
