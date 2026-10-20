@@ -273,6 +273,13 @@ No dedicated synthesis target. The HDL of the `default` target is synthesizable:
 - Writes happen on the rising edge of `clk_i` when `cke_i = 1` and the write condition is true (`we_i`, or `cs_i and we_i` for `ram_1rw`).
 - Asynchronous read: `rdata` follows the read address combinationally; a word written on an edge is visible right after it.
 - Synchronous read: `rdata` is the content at the address sampled on the edge (read-before-write: a read and a write to the same address on the same edge return the old word) and holds its value when the read enable is low.
+
+### Read During Write
+
+- Contract of `ram_1r1w` / `ram_2r1w` with `SYNC_READ = true`: a read and a write of the same address on the same enabled edge return the **old** word (read-first). It is the RTL and simulation behaviour, checked by test 3 of `tb_ram`.
+- On a target, this contract holds only if the inferred block RAM is configured read-first (or if the synthesis tool adds the bypass logic): many dual-port blocks are write-first or undefined on a same-address collision. Check the mode chosen by the tool for each instance that can collide (e.g. `NX_RAM` mode in the nxmap report on NG-MEDIUM).
+- A design that must not depend on it either never reads and writes the same address in the same cycle, or adds its own bypass (`fifo_sync` registers the written word for this case). Known user exposed to it: `OpenBlaze8_RegFile` with `REGFILE_SYNC_READ = true` (read address = write address).
+- `ram_1rw` has a single address: a write cycle does not update the registered read data. With `SYNC_READ = false` the read is combinational and the written word is visible right after the edge.
 - Address width is `log2(DEPTH)` (floor), so `DEPTH` must be a power of 2 to address every word: with another value the words `2**log2(DEPTH)` to `DEPTH-1` of `ram_*` are unreachable and `sbi_ram` is rounded down to `2**log2(DEPTH)` words. The rounding keeps the array size equal to the addressable range and the port widths unchanged; since it silently loses words, a simulation assertion now reports it.
 - `sbi_ram` decodes only the `log2(DEPTH)` LSBs of the SBI address: higher addresses alias onto the RAM (the interconnect is expected to decode the base address).
 
