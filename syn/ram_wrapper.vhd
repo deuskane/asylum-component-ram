@@ -1,12 +1,12 @@
 -------------------------------------------------------------------------------
--- Title      : ram_synth_top
+-- Title      : ram_wrapper
 -- Project    : Asylum
 -------------------------------------------------------------------------------
--- File       : ram_synth_top.vhd
+-- File       : ram_wrapper.vhd
 -- Author     : Mathieu Rosiere
 -------------------------------------------------------------------------------
 -- Description:
--- Synthesis check top (lint_ghdl, lint_ghdl_synth) : one instance of each
+-- Wrapper (lint_ghdl, lint_ghdl_synth_*) : one instance of each
 -- RAM of the core (ram_1r1w, ram_2r1w, ram_1rw, sbi_ram) with flat and
 -- constrained ports (sbi_ram has unconstrained SBI ports and cannot be a
 -- synthesis top). WIDTH applies to ram_1r1w / ram_2r1w / ram_1rw (sbi_ram
@@ -17,6 +17,7 @@
 -- Revisions  :
 -- Date        Version  Author   Description
 -- 2026-10-20  1.0      mrosiere Created
+-- 2026-10-24  1.1      mrosiere Was ram_synth_top, library asylum
 -------------------------------------------------------------------------------
 
 library ieee;
@@ -25,7 +26,7 @@ library asylum;
 use     asylum.math_pkg.all;
 use     asylum.sbi_pkg.all;
 
-entity ram_synth_top is
+entity ram_wrapper is
   generic (
     WIDTH         : natural := 32;
     DEPTH         : natural := 32;  -- <= 2**SBI_ADDR_WIDTH (sbi_ram)
@@ -71,9 +72,9 @@ entity ram_synth_top is
     sbi_ready_o   : out std_logic;
     sbi_rdata_o   : out std_logic_vector(SBI_DATA_WIDTH-1 downto 0)
   );
-end entity ram_synth_top;
+end entity ram_wrapper;
 
-architecture rtl of ram_synth_top is
+architecture rtl of ram_wrapper is
 
   signal sbi_ini       : sbi_ini_t(addr (SBI_ADDR_WIDTH-1 downto 0),
                                    wdata(SBI_DATA_WIDTH-1 downto 0));

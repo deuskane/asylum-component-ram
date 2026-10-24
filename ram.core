@@ -55,13 +55,18 @@ filesets:
       - bitvis:verification:uvvm
 
   #---------------------------------------
-  # Lint Files (lint top + post_run hook of lint_ghdl_synth)
+  # Lint / synthesis check : wrapper and ghdl_synth.sh / ghdl_synth.mk
+  # (pre_run hook of lint_ghdl_synth_*), copy of tools/ghdl of
+  # asylum:utils:generators : no dependency to generators (cycle
+  # generators -> fifo -> ram -> pkg)
   #---------------------------------------
-  files_lint:
-    files:
-      - syn/ghdl/ram_synth_top.vhd
+  syn:
+    files        :
+      - syn/ram_wrapper.vhd
       - syn/ghdl/ghdl_synth.sh : {file_type : user, copyto : ghdl_synth.sh}
-    file_type : vhdlSource-2008
+      - syn/ghdl/ghdl_synth.mk : {file_type : user, copyto : ghdl_synth.mk}
+    file_type    : vhdlSource-2008
+    logical_name : asylum
 
 targets:
 
@@ -78,31 +83,68 @@ targets:
   #---------------------------------------
   # Lint : -Wall analysis and elaboration (empty simulation)
   #---------------------------------------
-  lint_ghdl :
+  lint_ghdl : &lint_ghdl
     << : *default
-    description     : Lint with GHDL (-Wall analysis and elaboration of ram_synth_top, all RAMs)
-    toplevel        : ram_synth_top
-    filesets_append : [files_lint]
+    description     : Lint with GHDL (-Wall analysis and elaboration of ram_wrapper, all RAMs)
+    toplevel        : asylum.ram_wrapper
+    filesets_append : [syn]
     default_tool    : ghdl
     tools :
       ghdl :
         analyze_options : ["-Wall"]
 
   #---------------------------------------
-  # Synthesis check : lint_ghdl, then ghdl --synth -Wall of ram_synth_top
-  # for each configuration of syn/ghdl/ghdl_synth.sh (post_run hook)
+  # Synthesis check : -Wall analysis, ghdl --synth -Wall and elaboration
+  # (no simulation) of ram_wrapper with the generics of the target.
+  # The pre_run hook (syn/ghdl/ghdl_synth.sh) adds syn/ghdl/ghdl_synth.mk
+  # to the edalize Makefile.
+  # FuseSoC merges tools in depth : analyze_options comes from lint_ghdl.
   #---------------------------------------
-  lint_ghdl_synth :
-    << : *default
-    description     : Synthesis check, ghdl --synth -Wall of ram_synth_top, all RAMs (5 configurations)
-    toplevel        : ram_synth_top
-    filesets_append : [files_lint]
-    default_tool    : ghdl
+  lint_ghdl_synth_default : &lint_ghdl_synth
+    << : *lint_ghdl
+    description     : Synthesis check of ram_wrapper, 32x32 bits, asynchronous read (default generics)
     tools :
       ghdl :
-        analyze_options : ["-Wall"]
+        run_options     : ["--no-run"]
     hooks :
-      post_run : [ghdl_synth]
+      pre_run : [ghdl_synth]
+
+  #---------------------------------------
+  lint_ghdl_synth_32x32b_read_sync :
+  #---------------------------------------
+    << : *lint_ghdl_synth
+    description     : Synthesis check of ram_wrapper, 32x32 bits, synchronous read
+    parameters      :
+      - SYNC_READ=true
+
+  #---------------------------------------
+  lint_ghdl_synth_16x8b_read_async :
+  #---------------------------------------
+    << : *lint_ghdl_synth
+    description     : Synthesis check of ram_wrapper, 16x8 bits, asynchronous read
+    parameters      :
+      - WIDTH=8
+      - DEPTH=16
+
+  #---------------------------------------
+  lint_ghdl_synth_16x8b_read_sync :
+  #---------------------------------------
+    << : *lint_ghdl_synth
+    description     : Synthesis check of ram_wrapper, 16x8 bits, synchronous read
+    parameters      :
+      - WIDTH=8
+      - DEPTH=16
+      - SYNC_READ=true
+
+  #---------------------------------------
+  lint_ghdl_synth_256x8b_read_sync :
+  #---------------------------------------
+    << : *lint_ghdl_synth
+    description     : Synthesis check of ram_wrapper, 256x8 bits, synchronous read
+    parameters      :
+      - WIDTH=8
+      - DEPTH=256
+      - SYNC_READ=true
 
   sim_16x8b_sync_read:
     << : *default
@@ -171,7 +213,7 @@ targets:
 scripts:
 
   #---------------------------------------
-  # Hook of lint_ghdl_synth (cwd = work_root)
+  # pre_run hook of lint_ghdl_synth_* (cwd = work_root)
   #---------------------------------------
   ghdl_synth :
     cmd : [bash, ghdl_synth.sh]

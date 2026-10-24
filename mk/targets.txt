@@ -1,8 +1,12 @@
-default               : Default Target
-lint_ghdl             : Lint with GHDL (-Wall analysis and elaboration of ram_synth_top, all RAMs)
-lint_ghdl_synth       : Synthesis check, ghdl --synth -Wall of ram_synth_top, all RAMs (5 configurations)
-sim_16x8b_async_read  : All RAMs and sbi_ram, synchronous read (WIDTH=8, DEPTH=16)
-sim_16x8b_sync_read   : All RAMs and sbi_ram, asynchronous read (WIDTH=8, DEPTH=16)
-sim_64x32b_async_read : All RAMs and sbi_ram, synchronous read (WIDTH=32, DEPTH=64)
-sim_64x32b_sync_read  : All RAMs and sbi_ram, asynchronous read (WIDTH=32, DEPTH=64)
+default                          : Default Target
+lint_ghdl                        : Lint with GHDL (-Wall analysis and elaboration of ram_wrapper, all RAMs)
+lint_ghdl_synth_16x8b_read_async : Synthesis check of ram_wrapper, 16x8 bits, asynchronous read
+lint_ghdl_synth_16x8b_read_sync  : Synthesis check of ram_wrapper, 16x8 bits, synchronous read
+lint_ghdl_synth_256x8b_read_sync : Synthesis check of ram_wrapper, 256x8 bits, synchronous read
+lint_ghdl_synth_32x32b_read_sync : Synthesis check of ram_wrapper, 32x32 bits, synchronous read
+lint_ghdl_synth_default          : Synthesis check of ram_wrapper, 32x32 bits, asynchronous read (default generics)
+sim_16x8b_async_read             : All RAMs and sbi_ram, synchronous read (WIDTH=8, DEPTH=16)
+sim_16x8b_sync_read              : All RAMs and sbi_ram, asynchronous read (WIDTH=8, DEPTH=16)
+sim_64x32b_async_read            : All RAMs and sbi_ram, synchronous read (WIDTH=32, DEPTH=64)
+sim_64x32b_sync_read             : All RAMs and sbi_ram, asynchronous read (WIDTH=32, DEPTH=64)
 
