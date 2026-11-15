@@ -55,18 +55,18 @@ filesets:
       - bitvis:verification:uvvm
 
   #---------------------------------------
-  # Lint / synthesis check : wrapper and ghdl_synth.sh / ghdl_synth.mk
-  # (pre_run hook of lint_ghdl_synth_*), copy of tools/ghdl of
-  # asylum:utils:generators : no dependency to generators (cycle
+  # Lint / synthesis check : wrapper, and ghdl_synth.sh / ghdl_synth.mk
+  # (pre_run hook of lint_ghdl_synth_*) of asylum:utils:ghdl_synth, a core
+  # without dependency (ram cannot depend on generators : cycle
   # generators -> fifo -> ram -> pkg)
   #---------------------------------------
   syn:
     files        :
       - syn/ram_wrapper.vhd
-      - syn/ghdl/ghdl_synth.sh : {file_type : user, copyto : ghdl_synth.sh}
-      - syn/ghdl/ghdl_synth.mk : {file_type : user, copyto : ghdl_synth.mk}
     file_type    : vhdlSource-2008
     logical_name : asylum
+    depend       :
+      - asylum:utils:ghdl_synth
 
 targets:
 
@@ -96,8 +96,8 @@ targets:
   #---------------------------------------
   # Synthesis check : -Wall analysis, ghdl --synth -Wall and elaboration
   # (no simulation) of ram_wrapper with the generics of the target.
-  # The pre_run hook (syn/ghdl/ghdl_synth.sh) adds syn/ghdl/ghdl_synth.mk
-  # to the edalize Makefile.
+  # The pre_run hook (ghdl_synth.sh of asylum:utils:ghdl_synth) adds
+  # ghdl_synth.mk to the edalize Makefile.
   # FuseSoC merges tools in depth : analyze_options comes from lint_ghdl.
   #---------------------------------------
   lint_ghdl_synth_default : &lint_ghdl_synth
