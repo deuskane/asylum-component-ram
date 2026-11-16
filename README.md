@@ -274,7 +274,7 @@ fusesoc --cores-root . run --build-root build --target sim_16x8b_sync_read asylu
 
 ## Synthesis
 
-No vendor synthesis target (the `lint_ghdl_synth_*` targets check the RTL with `ghdl --synth`, see [Targets](#targets)). The HDL of the `default` target is synthesizable: the only simulation-only construct is the `DEPTH` power-of-2 assertion, enclosed in `pragma translate_off / translate_on` (no `textio`, file access or `wait`). The memory array is a plain signal array without reset, written synchronously, so it is inferred as RAM:
+No vendor synthesis target (the `lint_ghdl_synth_*` targets check the RTL with `ghdl --synth`, see [Targets](#targets)). The HDL of the `default` target is synthesizable: the only simulation-only construct is the `DEPTH` power-of-2 assertion, enclosed in `pragma translate_off / translate_on` (no `textio`, file access or `wait`). The sources are VHDL-2008 (`file_type: vhdlSource-2008`): `sbi_ram` uses the unconstrained records of `sbi_pkg` (`sbi_ini_i.wdata'length`) and `to_string(integer)`, and `ram_pkg` declares `sbi_ram` with these records, so a per-file tool (Vivado, Questa) must compile them in VHDL-2008 mode. The memory array is a plain signal array without reset, written synchronously, so it is inferred as RAM:
 
 - `SYNC_READ = true`: registered read port(s), suitable for block RAM.
 - `SYNC_READ = false`: asynchronous read, which maps to distributed / LUT RAM or registers.
