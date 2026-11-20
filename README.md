@@ -184,30 +184,18 @@ Figures of the `syn_*` targets (`make nonreg_syn`, see [Targets](#targets)): eac
 
 | Configuration | LUT¹ | LUTRAM¹ | FF¹ | CARRY4¹ | MUXF7/F8¹ | BRAM¹ | DSP¹ | Area² (µm²) | kGE³ |
 |---|---|---|---|---|---|---|---|---|---|
-| `syn_ram_1r1w_16x8b_read_async` | 1 | 8 | 0 | 0 | 0 | 0 | 0 | 5047.34 | 1.345 |
-| `syn_ram_1r1w_16x8b_read_sync` | 2 | 8 | 8 | 0 | 0 | 0 | 0 | 5303.84 | 1.413 |
 | `syn_ram_1r1w_32x32b_read_async` | 1 | 24 | 0 | 0 | 0 | 0 | 0 | 39848.22 | 10.616 |
-| `syn_ram_1r1w_32x32b_read_sync` | 2 | 24 | 32 | 0 | 0 | 0 | 0 | 40963.04 | 10.913 |
 | `syn_ram_1r1w_256x8b_read_sync` | 13 | 48 | 8 | 0 | 0 | 0 | 0 | 81109.04 | 21.608 |
-| `syn_ram_2r1w_16x8b_read_async` | 1 | 16 | 0 | 0 | 0 | 0 | 0 | 5948.20 | 1.585 |
-| `syn_ram_2r1w_16x8b_read_sync` | 3 | 16 | 16 | 0 | 0 | 0 | 0 | 6461.20 | 1.721 |
 | `syn_ram_2r1w_32x32b_read_async` | 1 | 48 | 0 | 0 | 0 | 0 | 0 | 47415.48 | 12.632 |
-| `syn_ram_2r1w_32x32b_read_sync` | 3 | 48 | 64 | 0 | 0 | 0 | 0 | 49657.63 | 13.229 |
 | `syn_ram_2r1w_256x8b_read_sync` | 22 | 96 | 16 | 0 | 0 | 0 | 0 | 96665.21 | 25.753 |
-| `syn_ram_1rw_16x8b_read_async` | 1 | 4 | 0 | 0 | 0 | 0 | 0 | 5016.06 | 1.336 |
-| `syn_ram_1rw_16x8b_read_sync` | 2 | 4 | 8 | 0 | 0 | 0 | 0 | 5266.30 | 1.403 |
 | `syn_ram_1rw_32x32b_read_async` | 1 | 16 | 0 | 0 | 0 | 0 | 0 | 39265.16 | 10.461 |
-| `syn_ram_1rw_32x32b_read_sync` | 2 | 16 | 32 | 0 | 0 | 0 | 0 | 40238.59 | 10.720 |
 | `syn_ram_1rw_256x8b_read_sync` | 2 | 32 | 8 | 0 | 0 | 0 | 0 | 79441.19 | 21.164 |
-| `syn_sbi_ram_16x8b_read_async` | 1 | 4 | 0 | 0 | 0 | 0 | 0 | 5001.05 | 1.332 |
-| `syn_sbi_ram_16x8b_read_sync` | 4 | 4 | 9 | 0 | 0 | 0 | 0 | 5297.58 | 1.411 |
 | `syn_sbi_ram_32x8b_read_async` | 1 | 4 | 0 | 0 | 0 | 0 | 0 | 10013.35 | 2.668 |
-| `syn_sbi_ram_32x8b_read_sync` | 4 | 4 | 9 | 0 | 0 | 0 | 0 | 10298.63 | 2.744 |
 | `syn_sbi_ram_256x8b_read_sync` | 4 | 32 | 9 | 0 | 0 | 0 | 0 | 79422.42 | 21.159 |
 
-¹ Xilinx Artix-7 (LUT6), Yosys 0.33 `synth_xilinx -flatten -noiopad -noclkbuf`, before place and route: every cell of the netlist is counted, Vivado may differ. **Where the memory goes**: in every configuration Yosys puts the memory in distributed RAM (LUTRAM column, 4 LUTs per `RAM32M`, `RAM64M` or `RAM256X1S` cell), none in a block RAM, even 256x8 with a registered read. The registered read data are flip-flops (`WIDTH` per read port: 8, 16, 32 or 64), plus `ready_r` in `sbi_ram` (its `INV` on the reset pin counts as a `LUT1`). `ram_2r1w` uses twice the LUTRAM of `ram_1r1w`: one copy of the memory per read port. Another tool may choose a block RAM for the registered read: check its read-during-write mode (see [Read during write](#read-during-write)).
+¹ Xilinx Artix-7 (LUT6), Yosys 0.33 `synth_xilinx -flatten -noiopad -noclkbuf`, before place and route: every cell of the netlist is counted, Vivado may differ. **Where the memory goes**: in every configuration Yosys puts the memory in distributed RAM (LUTRAM column, 4 LUTs per `RAM32M`, `RAM64M` or `RAM256X1S` cell), none in a block RAM, even 256x8 with a registered read. The registered read data are flip-flops (`WIDTH` per read port: 8 per port in the 256x8 configurations), plus `ready_r` in `sbi_ram` (its `INV` on the reset pin counts as a `LUT1`). `ram_2r1w` uses twice the LUTRAM of `ram_1r1w`: one copy of the memory per read port. Another tool may choose a block RAM for the registered read: check its read-during-write mode (see [Read during write](#read-during-write)).
 
-² SkyWater sky130 `sky130_fd_sc_hd`, typical corner (tt, 25 °C, 1.80 V), Yosys 0.33 `synth` + `dfflibmap` + `abc -liberty`: standard-cell area only, no timing constraint, no buffering, clock tree or placement. **Where the memory goes**: there is no SRAM macro, the memory becomes flip-flops, `DEPTH x WIDTH` of them (128 for 16x8, 256 for 32x8, 1024 for 32x32, 2048 for 256x8), plus the registered read data and the read multiplexers: the area grows with the number of bits, not with the number of ports.
+² SkyWater sky130 `sky130_fd_sc_hd`, typical corner (tt, 25 °C, 1.80 V), Yosys 0.33 `synth` + `dfflibmap` + `abc -liberty`: standard-cell area only, no timing constraint, no buffering, clock tree or placement. **Where the memory goes**: there is no SRAM macro, the memory becomes flip-flops, `DEPTH x WIDTH` of them (256 for 32x8, 1024 for 32x32, 2048 for 256x8), plus the registered read data and the read multiplexers: the area grows mostly with the number of bits, a second read port adds its multiplexer (`ram_2r1w`).
 
 ³ Area in thousands of NAND2 gate equivalents (`sky130_fd_sc_hd__nand2_1` = 3.7536 µm²).
 
@@ -295,8 +283,7 @@ With `SYNC_READ = false` the read data are checked on every cycle (no registered
 | `sim_64x32b_sync_read` | `tb_ram` | `WIDTH = 32`, `DEPTH = 64`, `SYNC_READ = true`, every scenario (5645 checks) |
 | `sim_64x32b_async_read` | `tb_ram` | `WIDTH = 32`, `DEPTH = 64`, `SYNC_READ = false`, every scenario (6833 checks) |
 | `lint_ghdl` | `asylum.sbi_ram_wrapper` | GHDL `-Wall` analysis of every RAM and of [syn/sbi_ram_wrapper.vhd](syn/sbi_ram_wrapper.vhd) (`sbi_ram` with flat SBI ports), elaboration of `sbi_ram_wrapper` |
-| `lint_ghdl_synth_<ram>_<config>` | the RAM, or `sbi_ram_wrapper` | `ghdl --synth` check (no latch, synthesizable) of `ram_1r1w`, `ram_2r1w`, `ram_1rw`: `32x32b_read_async`, `32x32b_read_sync`, `16x8b_read_async`, `16x8b_read_sync`, `256x8b_read_sync`; of `sbi_ram`: `32x8b_read_async`, `32x8b_read_sync`, `16x8b_read_async`, `16x8b_read_sync`, `256x8b_read_sync` |
-| `syn_<ram>_<config>` | the RAM, or `sbi_ram_wrapper` | Synthesis with Yosys, Artix-7 and sky130 (see [Resources](#resources)), same configurations as `lint_ghdl_synth_*` |
+| `lint_ghdl_synth_<ram>_<config>` | the RAM, or `sbi_ram_wrapper` | `ghdl --synth` check (no latch, synthesizable) of `ram_1r1w`, `ram_2r1w`, `ram_1rw`: `32x32b_read_async` (default generics), `256x8b_read_sync`; of `sbi_ram`: `32x8b_read_async`, `256x8b_read_sync` |
 
 The reference configuration has a build-only base target and one target per scenario: one CI job per scenario, a failure is isolated. Every other configuration has one target that runs the whole list: the `TEST <i>/<N>` header names a failing scenario. FuseSoC replaces the `parameters` list of an inherited target, so each target repeats the generics of its configuration.
 
