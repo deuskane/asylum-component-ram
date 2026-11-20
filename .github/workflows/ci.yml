@@ -77,16 +77,6 @@ jobs:
     with:
       name: lint_ghdl
 
-  lint_ghdl_synth_ram_1r1w_16x8b_read_async:
-    uses: deuskane/asylum-ci/.github/workflows/vhdl-ci.yml@main
-    with:
-      name: lint_ghdl_synth_ram_1r1w_16x8b_read_async
-
-  lint_ghdl_synth_ram_1r1w_16x8b_read_sync:
-    uses: deuskane/asylum-ci/.github/workflows/vhdl-ci.yml@main
-    with:
-      name: lint_ghdl_synth_ram_1r1w_16x8b_read_sync
-
   lint_ghdl_synth_ram_1r1w_256x8b_read_sync:
     uses: deuskane/asylum-ci/.github/workflows/vhdl-ci.yml@main
     with:
@@ -96,21 +86,6 @@ jobs:
     uses: deuskane/asylum-ci/.github/workflows/vhdl-ci.yml@main
     with:
       name: lint_ghdl_synth_ram_1r1w_32x32b_read_async
-
-  lint_ghdl_synth_ram_1r1w_32x32b_read_sync:
-    uses: deuskane/asylum-ci/.github/workflows/vhdl-ci.yml@main
-    with:
-      name: lint_ghdl_synth_ram_1r1w_32x32b_read_sync
-
-  lint_ghdl_synth_ram_1rw_16x8b_read_async:
-    uses: deuskane/asylum-ci/.github/workflows/vhdl-ci.yml@main
-    with:
-      name: lint_ghdl_synth_ram_1rw_16x8b_read_async
-
-  lint_ghdl_synth_ram_1rw_16x8b_read_sync:
-    uses: deuskane/asylum-ci/.github/workflows/vhdl-ci.yml@main
-    with:
-      name: lint_ghdl_synth_ram_1rw_16x8b_read_sync
 
   lint_ghdl_synth_ram_1rw_256x8b_read_sync:
     uses: deuskane/asylum-ci/.github/workflows/vhdl-ci.yml@main
@@ -122,21 +97,6 @@ jobs:
     with:
       name: lint_ghdl_synth_ram_1rw_32x32b_read_async
 
-  lint_ghdl_synth_ram_1rw_32x32b_read_sync:
-    uses: deuskane/asylum-ci/.github/workflows/vhdl-ci.yml@main
-    with:
-      name: lint_ghdl_synth_ram_1rw_32x32b_read_sync
-
-  lint_ghdl_synth_ram_2r1w_16x8b_read_async:
-    uses: deuskane/asylum-ci/.github/workflows/vhdl-ci.yml@main
-    with:
-      name: lint_ghdl_synth_ram_2r1w_16x8b_read_async
-
-  lint_ghdl_synth_ram_2r1w_16x8b_read_sync:
-    uses: deuskane/asylum-ci/.github/workflows/vhdl-ci.yml@main
-    with:
-      name: lint_ghdl_synth_ram_2r1w_16x8b_read_sync
-
   lint_ghdl_synth_ram_2r1w_256x8b_read_sync:
     uses: deuskane/asylum-ci/.github/workflows/vhdl-ci.yml@main
     with:
@@ -146,21 +106,6 @@ jobs:
     uses: deuskane/asylum-ci/.github/workflows/vhdl-ci.yml@main
     with:
       name: lint_ghdl_synth_ram_2r1w_32x32b_read_async
-
-  lint_ghdl_synth_ram_2r1w_32x32b_read_sync:
-    uses: deuskane/asylum-ci/.github/workflows/vhdl-ci.yml@main
-    with:
-      name: lint_ghdl_synth_ram_2r1w_32x32b_read_sync
-
-  lint_ghdl_synth_sbi_ram_16x8b_read_async:
-    uses: deuskane/asylum-ci/.github/workflows/vhdl-ci.yml@main
-    with:
-      name: lint_ghdl_synth_sbi_ram_16x8b_read_async
-
-  lint_ghdl_synth_sbi_ram_16x8b_read_sync:
-    uses: deuskane/asylum-ci/.github/workflows/vhdl-ci.yml@main
-    with:
-      name: lint_ghdl_synth_sbi_ram_16x8b_read_sync
 
   lint_ghdl_synth_sbi_ram_256x8b_read_sync:
     uses: deuskane/asylum-ci/.github/workflows/vhdl-ci.yml@main
@@ -172,21 +117,6 @@ jobs:
     with:
       name: lint_ghdl_synth_sbi_ram_32x8b_read_async
 
-  lint_ghdl_synth_sbi_ram_32x8b_read_sync:
-    uses: deuskane/asylum-ci/.github/workflows/vhdl-ci.yml@main
-    with:
-      name: lint_ghdl_synth_sbi_ram_32x8b_read_sync
-
-  syn_ram_1r1w_16x8b_read_async:
-    uses: deuskane/asylum-ci/.github/workflows/vhdl-ci.yml@main
-    with:
-      name: syn_ram_1r1w_16x8b_read_async
-
-  syn_ram_1r1w_16x8b_read_sync:
-    uses: deuskane/asylum-ci/.github/workflows/vhdl-ci.yml@main
-    with:
-      name: syn_ram_1r1w_16x8b_read_sync
-
   syn_ram_1r1w_256x8b_read_sync:
     uses: deuskane/asylum-ci/.github/workflows/vhdl-ci.yml@main
     with:
@@ -196,21 +126,6 @@ jobs:
     uses: deuskane/asylum-ci/.github/workflows/vhdl-ci.yml@main
     with:
       name: syn_ram_1r1w_32x32b_read_async
-
-  syn_ram_1r1w_32x32b_read_sync:
-    uses: deuskane/asylum-ci/.github/workflows/vhdl-ci.yml@main
-    with:
-      name: syn_ram_1r1w_32x32b_read_sync
-
-  syn_ram_1rw_16x8b_read_async:
-    uses: deuskane/asylum-ci/.github/workflows/vhdl-ci.yml@main
-    with:
-      name: syn_ram_1rw_16x8b_read_async
-
-  syn_ram_1rw_16x8b_read_sync:
-    uses: deuskane/asylum-ci/.github/workflows/vhdl-ci.yml@main
-    with:
-      name: syn_ram_1rw_16x8b_read_sync
 
   syn_ram_1rw_256x8b_read_sync:
     uses: deuskane/asylum-ci/.github/workflows/vhdl-ci.yml@main
@@ -222,21 +137,6 @@ jobs:
     with:
       name: syn_ram_1rw_32x32b_read_async
 
-  syn_ram_1rw_32x32b_read_sync:
-    uses: deuskane/asylum-ci/.github/workflows/vhdl-ci.yml@main
-    with:
-      name: syn_ram_1rw_32x32b_read_sync
-
-  syn_ram_2r1w_16x8b_read_async:
-    uses: deuskane/asylum-ci/.github/workflows/vhdl-ci.yml@main
-    with:
-      name: syn_ram_2r1w_16x8b_read_async
-
-  syn_ram_2r1w_16x8b_read_sync:
-    uses: deuskane/asylum-ci/.github/workflows/vhdl-ci.yml@main
-    with:
-      name: syn_ram_2r1w_16x8b_read_sync
-
   syn_ram_2r1w_256x8b_read_sync:
     uses: deuskane/asylum-ci/.github/workflows/vhdl-ci.yml@main
     with:
@@ -246,21 +146,6 @@ jobs:
     uses: deuskane/asylum-ci/.github/workflows/vhdl-ci.yml@main
     with:
       name: syn_ram_2r1w_32x32b_read_async
-
-  syn_ram_2r1w_32x32b_read_sync:
-    uses: deuskane/asylum-ci/.github/workflows/vhdl-ci.yml@main
-    with:
-      name: syn_ram_2r1w_32x32b_read_sync
-
-  syn_sbi_ram_16x8b_read_async:
-    uses: deuskane/asylum-ci/.github/workflows/vhdl-ci.yml@main
-    with:
-      name: syn_sbi_ram_16x8b_read_async
-
-  syn_sbi_ram_16x8b_read_sync:
-    uses: deuskane/asylum-ci/.github/workflows/vhdl-ci.yml@main
-    with:
-      name: syn_sbi_ram_16x8b_read_sync
 
   syn_sbi_ram_256x8b_read_sync:
     uses: deuskane/asylum-ci/.github/workflows/vhdl-ci.yml@main
@@ -272,13 +157,8 @@ jobs:
     with:
       name: syn_sbi_ram_32x8b_read_async
 
-  syn_sbi_ram_32x8b_read_sync:
-    uses: deuskane/asylum-ci/.github/workflows/vhdl-ci.yml@main
-    with:
-      name: syn_sbi_ram_32x8b_read_sync
-
   badges:
-    needs: [sim_16x8b_async_read, sim_16x8b_sync_read, sim_16x8b_sync_read_clock_enable, sim_16x8b_sync_read_random, sim_16x8b_sync_read_read_during_write, sim_16x8b_sync_read_read_enable, sim_16x8b_sync_read_sbi_aliasing, sim_16x8b_sync_read_sbi_name, sim_16x8b_sync_read_sbi_write_read, sim_16x8b_sync_read_write_enable, sim_16x8b_sync_read_write_read, sim_64x32b_async_read, sim_64x32b_sync_read, lint_ghdl, lint_ghdl_synth_ram_1r1w_16x8b_read_async, lint_ghdl_synth_ram_1r1w_16x8b_read_sync, lint_ghdl_synth_ram_1r1w_256x8b_read_sync, lint_ghdl_synth_ram_1r1w_32x32b_read_async, lint_ghdl_synth_ram_1r1w_32x32b_read_sync, lint_ghdl_synth_ram_1rw_16x8b_read_async, lint_ghdl_synth_ram_1rw_16x8b_read_sync, lint_ghdl_synth_ram_1rw_256x8b_read_sync, lint_ghdl_synth_ram_1rw_32x32b_read_async, lint_ghdl_synth_ram_1rw_32x32b_read_sync, lint_ghdl_synth_ram_2r1w_16x8b_read_async, lint_ghdl_synth_ram_2r1w_16x8b_read_sync, lint_ghdl_synth_ram_2r1w_256x8b_read_sync, lint_ghdl_synth_ram_2r1w_32x32b_read_async, lint_ghdl_synth_ram_2r1w_32x32b_read_sync, lint_ghdl_synth_sbi_ram_16x8b_read_async, lint_ghdl_synth_sbi_ram_16x8b_read_sync, lint_ghdl_synth_sbi_ram_256x8b_read_sync, lint_ghdl_synth_sbi_ram_32x8b_read_async, lint_ghdl_synth_sbi_ram_32x8b_read_sync, syn_ram_1r1w_16x8b_read_async, syn_ram_1r1w_16x8b_read_sync, syn_ram_1r1w_256x8b_read_sync, syn_ram_1r1w_32x32b_read_async, syn_ram_1r1w_32x32b_read_sync, syn_ram_1rw_16x8b_read_async, syn_ram_1rw_16x8b_read_sync, syn_ram_1rw_256x8b_read_sync, syn_ram_1rw_32x32b_read_async, syn_ram_1rw_32x32b_read_sync, syn_ram_2r1w_16x8b_read_async, syn_ram_2r1w_16x8b_read_sync, syn_ram_2r1w_256x8b_read_sync, syn_ram_2r1w_32x32b_read_async, syn_ram_2r1w_32x32b_read_sync, syn_sbi_ram_16x8b_read_async, syn_sbi_ram_16x8b_read_sync, syn_sbi_ram_256x8b_read_sync, syn_sbi_ram_32x8b_read_async, syn_sbi_ram_32x8b_read_sync]
+    needs: [sim_16x8b_async_read, sim_16x8b_sync_read, sim_16x8b_sync_read_clock_enable, sim_16x8b_sync_read_random, sim_16x8b_sync_read_read_during_write, sim_16x8b_sync_read_read_enable, sim_16x8b_sync_read_sbi_aliasing, sim_16x8b_sync_read_sbi_name, sim_16x8b_sync_read_sbi_write_read, sim_16x8b_sync_read_write_enable, sim_16x8b_sync_read_write_read, sim_64x32b_async_read, sim_64x32b_sync_read, lint_ghdl, lint_ghdl_synth_ram_1r1w_256x8b_read_sync, lint_ghdl_synth_ram_1r1w_32x32b_read_async, lint_ghdl_synth_ram_1rw_256x8b_read_sync, lint_ghdl_synth_ram_1rw_32x32b_read_async, lint_ghdl_synth_ram_2r1w_256x8b_read_sync, lint_ghdl_synth_ram_2r1w_32x32b_read_async, lint_ghdl_synth_sbi_ram_256x8b_read_sync, lint_ghdl_synth_sbi_ram_32x8b_read_async, syn_ram_1r1w_256x8b_read_sync, syn_ram_1r1w_32x32b_read_async, syn_ram_1rw_256x8b_read_sync, syn_ram_1rw_32x32b_read_async, syn_ram_2r1w_256x8b_read_sync, syn_ram_2r1w_32x32b_read_async, syn_sbi_ram_256x8b_read_sync, syn_sbi_ram_32x8b_read_async]
     if: always() && github.event_name == 'push' && github.ref == 'refs/heads/main'
     permissions:
       contents: write
