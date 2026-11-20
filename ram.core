@@ -49,10 +49,23 @@ filesets:
   #---------------------------------------
   files_sim:
     files:
-      - sim/tb_ram.vhd
+      - sim/ram/tb_ram_bfm_pkg.vhd
+      - sim/ram/tb_ram_write_read_pkg.vhd
+      - sim/ram/tb_ram_read_during_write_pkg.vhd
+      - sim/ram/tb_ram_clock_enable_pkg.vhd
+      - sim/ram/tb_ram_read_enable_pkg.vhd
+      - sim/ram/tb_ram_write_enable_pkg.vhd
+      - sim/ram/tb_ram_random_pkg.vhd
+      - sim/ram/tb_ram_sbi_write_read_pkg.vhd
+      - sim/ram/tb_ram_sbi_aliasing_pkg.vhd
+      - sim/ram/tb_ram_sbi_name_pkg.vhd
+      - sim/ram/tb_ram_tests_pkg.vhd
+      - sim/ram/tb_ram.vhd
     file_type : vhdlSource-2008
     depend    :
       - bitvis:verification:uvvm
+      # string_pkg list_length / list_item / list_contains (TESTS_LIST)
+      - ">=asylum:utils:pkg:1.10.0"
 
   #---------------------------------------
   # Lint / synthesis check : wrapper, and ghdl_synth.sh / ghdl_synth.mk
@@ -146,69 +159,169 @@ targets:
       - DEPTH=256
       - SYNC_READ=true
 
-  sim_16x8b_sync_read:
+  #---------------------------------------
+  # tb_ram : compiled once per configuration (WIDTH, DEPTH, SYNC_READ),
+  # scenarios chosen at run time (TESTS_LIST, empty : build and
+  # elaboration only).
+  # Reference configuration : 16x8 bits, synchronous read :
+  # sim_16x8b_sync_read (build only) and one sim_16x8b_sync_read_<test>
+  # target per scenario ; the other configurations run the whole list.
+  # Each target repeats the generics of its configuration : FuseSoC
+  # replaces the parameters list of an inherited target.
+  #---------------------------------------
+  sim_16x8b_sync_read: &sim_ram
     << : *default
-    description     : All RAMs and sbi_ram, synchronous read (WIDTH=8, DEPTH=16)
+    description     : All RAMs and sbi_ram, synchronous read (WIDTH=8, DEPTH=16) - build only (scenarios of TESTS_LIST)
     filesets_append :
       - files_sim
     toplevel        : tb_ram
     parameters      :
+      - TESTS_LIST
       - WIDTH=8
       - DEPTH=16
       - SYNC_READ=true
     default_tool    : ghdl
     tools :
       ghdl :
-        analyze_options : ["-Wall","-fsynopsys","-frelaxed","--no-vital-checks"]
-        run_options     : ["--fst=dut.fst","--ieee-asserts=disable"]
+        analyze_options :
+          - "$(GHDL_ANALYZE_OPTION)"
+          - "-Wall"
+          - "-frelaxed"
+        run_options     :
+          - "$(GHDL_RUN_OPTION)"
+          - "--ieee-asserts=disable"
 
+  #---------------------------------------
+  sim_16x8b_sync_read_write_read:
+  #---------------------------------------
+    << : *sim_ram
+    description     : All RAMs and sbi_ram, synchronous read (WIDTH=8, DEPTH=16), scenario write_read
+    parameters      :
+      - TESTS_LIST=write_read
+      - WIDTH=8
+      - DEPTH=16
+      - SYNC_READ=true
+
+  #---------------------------------------
+  sim_16x8b_sync_read_read_during_write:
+  #---------------------------------------
+    << : *sim_ram
+    description     : All RAMs and sbi_ram, synchronous read (WIDTH=8, DEPTH=16), scenario read_during_write
+    parameters      :
+      - TESTS_LIST=read_during_write
+      - WIDTH=8
+      - DEPTH=16
+      - SYNC_READ=true
+
+  #---------------------------------------
+  sim_16x8b_sync_read_clock_enable:
+  #---------------------------------------
+    << : *sim_ram
+    description     : All RAMs and sbi_ram, synchronous read (WIDTH=8, DEPTH=16), scenario clock_enable
+    parameters      :
+      - TESTS_LIST=clock_enable
+      - WIDTH=8
+      - DEPTH=16
+      - SYNC_READ=true
+
+  #---------------------------------------
+  sim_16x8b_sync_read_read_enable:
+  #---------------------------------------
+    << : *sim_ram
+    description     : All RAMs and sbi_ram, synchronous read (WIDTH=8, DEPTH=16), scenario read_enable
+    parameters      :
+      - TESTS_LIST=read_enable
+      - WIDTH=8
+      - DEPTH=16
+      - SYNC_READ=true
+
+  #---------------------------------------
+  sim_16x8b_sync_read_write_enable:
+  #---------------------------------------
+    << : *sim_ram
+    description     : All RAMs and sbi_ram, synchronous read (WIDTH=8, DEPTH=16), scenario write_enable
+    parameters      :
+      - TESTS_LIST=write_enable
+      - WIDTH=8
+      - DEPTH=16
+      - SYNC_READ=true
+
+  #---------------------------------------
+  sim_16x8b_sync_read_random:
+  #---------------------------------------
+    << : *sim_ram
+    description     : All RAMs and sbi_ram, synchronous read (WIDTH=8, DEPTH=16), scenario random
+    parameters      :
+      - TESTS_LIST=random
+      - WIDTH=8
+      - DEPTH=16
+      - SYNC_READ=true
+
+  #---------------------------------------
+  sim_16x8b_sync_read_sbi_write_read:
+  #---------------------------------------
+    << : *sim_ram
+    description     : All RAMs and sbi_ram, synchronous read (WIDTH=8, DEPTH=16), scenario sbi_write_read
+    parameters      :
+      - TESTS_LIST=sbi_write_read
+      - WIDTH=8
+      - DEPTH=16
+      - SYNC_READ=true
+
+  #---------------------------------------
+  sim_16x8b_sync_read_sbi_aliasing:
+  #---------------------------------------
+    << : *sim_ram
+    description     : All RAMs and sbi_ram, synchronous read (WIDTH=8, DEPTH=16), scenario sbi_aliasing
+    parameters      :
+      - TESTS_LIST=sbi_aliasing
+      - WIDTH=8
+      - DEPTH=16
+      - SYNC_READ=true
+
+  #---------------------------------------
+  sim_16x8b_sync_read_sbi_name:
+  #---------------------------------------
+    << : *sim_ram
+    description     : All RAMs and sbi_ram, synchronous read (WIDTH=8, DEPTH=16), scenario sbi_name
+    parameters      :
+      - TESTS_LIST=sbi_name
+      - WIDTH=8
+      - DEPTH=16
+      - SYNC_READ=true
+
+  #---------------------------------------
   sim_16x8b_async_read:
-    << : *default
-    description     : All RAMs and sbi_ram, asynchronous read (WIDTH=8, DEPTH=16)
-    filesets_append :
-      - files_sim
-    toplevel        : tb_ram
+  #---------------------------------------
+    << : *sim_ram
+    description     : All RAMs and sbi_ram, asynchronous read (WIDTH=8, DEPTH=16), every scenario
     parameters      :
+      - TESTS_LIST=write_read,read_during_write,clock_enable,read_enable,write_enable,random,sbi_write_read,sbi_aliasing,sbi_name
       - WIDTH=8
       - DEPTH=16
       - SYNC_READ=false
-    default_tool    : ghdl
-    tools :
-      ghdl :
-        analyze_options : ["-Wall","-fsynopsys","-frelaxed","--no-vital-checks"]
-        run_options     : ["--fst=dut.fst","--ieee-asserts=disable"]
 
+  #---------------------------------------
   sim_64x32b_sync_read:
-    << : *default
-    description     : All RAMs and sbi_ram, synchronous read (WIDTH=32, DEPTH=64)
-    filesets_append :
-      - files_sim
-    toplevel        : tb_ram
+  #---------------------------------------
+    << : *sim_ram
+    description     : All RAMs and sbi_ram, synchronous read (WIDTH=32, DEPTH=64), every scenario
     parameters      :
+      - TESTS_LIST=write_read,read_during_write,clock_enable,read_enable,write_enable,random,sbi_write_read,sbi_aliasing,sbi_name
       - WIDTH=32
       - DEPTH=64
       - SYNC_READ=true
-    default_tool    : ghdl
-    tools :
-      ghdl :
-        analyze_options : ["-Wall","-fsynopsys","-frelaxed","--no-vital-checks"]
-        run_options     : ["--fst=dut.fst","--ieee-asserts=disable"]
 
+  #---------------------------------------
   sim_64x32b_async_read:
-    << : *default
-    description     : All RAMs and sbi_ram, asynchronous read (WIDTH=32, DEPTH=64)
-    filesets_append :
-      - files_sim
-    toplevel        : tb_ram
+  #---------------------------------------
+    << : *sim_ram
+    description     : All RAMs and sbi_ram, asynchronous read (WIDTH=32, DEPTH=64), every scenario
     parameters      :
+      - TESTS_LIST=write_read,read_during_write,clock_enable,read_enable,write_enable,random,sbi_write_read,sbi_aliasing,sbi_name
       - WIDTH=32
       - DEPTH=64
       - SYNC_READ=false
-    default_tool    : ghdl
-    tools :
-      ghdl :
-        analyze_options : ["-Wall","-fsynopsys","-frelaxed","--no-vital-checks"]
-        run_options     : ["--fst=dut.fst","--ieee-asserts=disable"]
 
 scripts:
 
@@ -219,6 +332,12 @@ scripts:
     cmd : [bash, ghdl_synth.sh]
 
 parameters :
+
+  TESTS_LIST :
+    description : Scenarios run in sequence, separated by ',' (names in sim/ram/tb_ram_tests_pkg.vhd), empty = build only
+    datatype    : str
+    default     : ""
+    paramtype   : generic
 
   WIDTH :
     description : Word width
