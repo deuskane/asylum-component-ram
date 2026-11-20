@@ -1,0 +1,23 @@
+{ "signal": [
+  { "name": "clk_i",                      "wave": "p......" },
+  { "name": "cke_i",                      "wave": "1......" },
+  ["ram_1r1w",
+    { "name": "re_i",                     "wave": "01.0..." },
+    { "name": "raddr_i",                  "wave": "x3.4x..", "data": ["A", "B"] },
+    { "name": "we_i",                     "wave": "010...." },
+    { "name": "waddr_i",                  "wave": "x3x....", "data": ["A"] },
+    { "name": "wdata_i",                  "wave": "x5x....", "data": ["new"] },
+    { "name": "ram_r(A)",                 "wave": "6.5....", "data": ["old", "new"] },
+    { "name": "rdata_o, SYNC_READ=false", "wave": "x657x..", "data": ["old", "new", "ram_r(B)"] },
+    { "name": "rdata_o, SYNC_READ=true",  "wave": "x.65...", "data": ["old", "new"] }
+  ],
+  {},
+  ["sbi_ram",
+    { "name": "cs, SYNC_READ=true",       "wave": "01.0..." },
+    { "name": "ready, SYNC_READ=true",    "wave": "0.10..." }
+  ]
+],
+  "head": { "text": "Read during write (address A) : the registered read returns the old word" },
+  "foot": { "text": "re_i = 0 holds the registered rdata_o ; sbi_ram : one wait state" },
+  "config": { "hscale": 2 }
+}

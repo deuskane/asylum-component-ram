@@ -1,120 +1,103 @@
 <!--
-  README GENERATION INSTRUCTIONS (for the next regeneration run)
+  README MODEL (common to every Asylum IP, keep the same headings)
   ----------------------------------------------------------------
-  This README follows the common Asylum IP model. Regenerate it from the
-  sources, never from the previous README text alone.
-
-  Sources of truth (in priority order):
-    1. hdl/*.vhd            : entities, generics, ports, packages
-    2. hdl/csr/*.hjson      : register map (regtool); *_csr.md/.h are generated
-    3. <IP>.core            : VLNV (name), filesets, targets, depends, revisions
-    4. mk/targets.txt       : target list shown by `make help`; mk/defs.mk
-    5. sim/, syn/, esw/, boards/ : testbenches, constraints, software
-  Section order (keep it, same headings in every IP):
-    CI badge / Title + one-line description + VLNV / Table of Contents /
-    Introduction (Key Features) / Block Diagram / Top-Level (Parameters,
-    Ports, Instantiation Example) / HDL Modules / Register Map /
-    Verification / Synthesis / Design Notes (optional) /
-    Directory Structure / Dependencies
+  Regenerate from the sources, never from the previous README text alone:
+    hdl/*.vhd (entities, generics, ports), hdl/csr/*.hjson (register map),
+    <IP>.core (VLNV, targets, depends), mk/targets.txt, sim/, syn/, esw/.
+  Sections, in this order:
+    badges / title + one-line pitch / Overview / Features / Block Diagram /
+    Getting Started / Hardware Interfaces / Configuration / Resources /
+    Theory of Operation / Registers / Programmer's Guide /
+    Design Verification / Dependencies and Related IPs / License
   Rules:
-    - Language: English. Tables: Parameters = Name|Type|Default|Description,
-      Ports = Name|Direction|Type|Description (grouped by interface).
-    - Register Map: link to the generated hdl/csr/<X>_csr.md (plus the
-      .hjson source and _csr.h header); never copy register tables here.
-    - Top-Level = sbi_* wrapper if present, else the entity used by the
-      `default` target, else the main entity (libraries: list packages).
-    - Write "This IP has no software-visible registers." / "No dedicated
-      synthesis target ..." instead of removing a section.
-    - Keep still-accurate hand-written content (ISA tables, results,
-      images) in "Design Notes"; drop anything not backed by the sources.
-    - Block diagram: doc/<NAME>.drawio (NAME = 4th field of the VLNV),
-      top entity box with generics on top, inputs left, outputs right,
-      bus interfaces as bold arrows, internal blocks colour-coded
-      (CSR yellow, FIFO/memory green, core logic blue, external grey).
-      Update it whenever ports/generics/sub-blocks change.
-    - Do not edit generated files (hdl/csr/*_csr.*) or the CI badge URL.
+    - English, short and factual: every statement backed by the sources.
+    - No VLNV line: the version badge shows it.
+    - Badges: first line version, license; second line CI, lint, sim, syn.
+    - Block diagram and FSM: pages Overview and FSM of doc/<NAME>.drawio, exported to
+      doc/<NAME>-Overview.png and doc/<NAME>-FSM.png (make -C doc).
+    - Timing diagrams: WaveDrom source doc/<NAME>-<what>.json, rendered
+      doc/<NAME>-<what>.svg (make -C doc), shown as images.
+    - No CPU named (OpenBlaze, PicoBlaze, RISC-V) outside the CPU and SoC IPs.
+    - Registers: link to the generated hdl/csr/<X>_csr.md, never copy the tables.
+    - Tables: Configuration = Name|Type|Default|Description,
+      Hardware Interfaces = Name|Direction|Type|Description, grouped by interface.
+    - A section with nothing to say is one line ("This IP has no
+      software-visible registers."), never removed.
 -->
+[![Version](https://img.shields.io/github/v/tag/deuskane/asylum-component-ram?filter=asylum-component-ram-*&label=version&color=blue)](https://github.com/deuskane/asylum-component-ram/tags)
+[![License](https://img.shields.io/github/license/deuskane/asylum-component-ram)](LICENSE)
+
 [![CI](https://github.com/deuskane/asylum-component-ram/actions/workflows/ci.yml/badge.svg)](https://github.com/deuskane/asylum-component-ram/actions/workflows/ci.yml)
+[![lint](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fdeuskane%2Fasylum-component-ram%2Fbadges%2Flint.json)](https://github.com/deuskane/asylum-component-ram/actions/workflows/ci.yml)
+[![sim](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fdeuskane%2Fasylum-component-ram%2Fbadges%2Fsim.json)](https://github.com/deuskane/asylum-component-ram/actions/workflows/ci.yml)
+[![syn](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fdeuskane%2Fasylum-component-ram%2Fbadges%2Fsyn.json)](https://github.com/deuskane/asylum-component-ram/actions/workflows/ci.yml)
 
-# asylum-component-ram
+# RAM
 
-**Generic inferred RAMs (1R1W, 2R1W, single-port 1RW) with asynchronous or synchronous read, plus an SBI memory-mapped RAM wrapper.**
+**Small, readable inferred RAMs in VHDL: one read and one write port, two read ports, single port, asynchronous or registered read, and a memory on the SBI bus.**
 
-VLNV: `asylum:component:ram:1.2.3`
+Part of the [Asylum project](https://github.com/deuskane/asylum-project), a collection of small IP cores, written to be read and learned from.
 
 ## Table of Contents
 
-1. [Introduction](#introduction)
-2. [Block Diagram](#block-diagram)
-3. [Top-Level](#top-level)
-4. [HDL Modules](#hdl-modules)
-5. [Register Map](#register-map)
-6. [Verification](#verification)
-7. [Synthesis](#synthesis)
-8. [Design Notes](#design-notes)
-9. [Directory Structure](#directory-structure)
-10. [Dependencies](#dependencies)
+1. [Overview](#overview)
+2. [Features](#features)
+3. [Block Diagram](#block-diagram)
+4. [Getting Started](#getting-started)
+5. [Hardware Interfaces](#hardware-interfaces)
+6. [Configuration](#configuration)
+7. [Resources](#resources)
+8. [Theory of Operation](#theory-of-operation)
+9. [Registers](#registers)
+10. [Programmer's Guide](#programmers-guide)
+11. [Design Verification](#design-verification)
+12. [Dependencies and Related IPs](#dependencies-and-related-ips)
+13. [License](#license)
 
-## Introduction
+## Overview
 
-This IP gathers the behavioural RAM models of the Asylum project, written to be inferred by synthesis tools: `ram_1r1w` (one read port, one write port), `ram_2r1w` (two read ports, one write port, e.g. register files) and `ram_1rw` (single shared port). All of them share the same generics (`WIDTH`, `DEPTH`, `SYNC_READ`) and a clock enable. `sbi_ram` wraps `ram_1rw` as an SBI target so that a processor can use it as data memory; it is the top-level documented below. `ram_1r1w` is also the storage of `asylum:component:fifo`.
+This IP gathers the RAMs of Asylum. They are plain VHDL arrays, written so that a synthesis tool infers a memory (distributed RAM or block RAM on an FPGA, flip-flops in an ASIC flow without SRAM macro):
 
-### Key Features
+- **`ram_1r1w`**: one read port and one write port (a FIFO storage);
+- **`ram_2r1w`**: two read ports and one write port (a register file);
+- **`ram_1rw`**: a single port, one address for the read and the write;
+- **`sbi_ram`**: `ram_1rw` as a target of the SBI bus (the simple bus of Asylum), a data memory for a CPU.
 
-- Generic word width (`WIDTH`) and number of words (`DEPTH`), address width `log2(DEPTH)`
-- `SYNC_READ = false`: combinational read; `SYNC_READ = true`: registered read gated by the read enable
-- Synchronous write on the rising edge of `clk_i`, clock enable `cke_i` on all ports
-- No reset on the memory array (RAM / block-RAM inference friendly)
-- `sbi_ram`: SBI target, data width taken from the SBI bus, zero wait state (`SYNC_READ = false`) or one wait state (`SYNC_READ = true`)
-- `sbi_ram` reports its name in `sbi_tgt_o.info` (`NAME`, or `"RAM<DEPTH>B"` by default)
-- Component declarations of all entities in `asylum.ram_pkg`
+The three RAMs share the same generics (`WIDTH`, `DEPTH`, `SYNC_READ`) and a clock enable.
+
+## Features
+
+- Word width `WIDTH` and number of words `DEPTH` (power of 2), address of `log2(DEPTH)` bits
+- `SYNC_READ = false`: combinational read; `SYNC_READ = true`: registered read, enabled by the read enable of the port
+- Registered read during a write of the same address: the old word (read-first)
+- Synchronous write on the rising edge of `clk_i`, clock enable `cke_i` on every port
+- No reset of the memory: block RAM and distributed RAM friendly
+- `sbi_ram`: data width of the SBI bus, zero wait state (`SYNC_READ = false`) or one wait state (`SYNC_READ = true`), its name in `sbi_tgt_o.info` (`NAME`, or `RAM<DEPTH>B`)
+- Simulation check that `DEPTH` is a power of 2
 
 ## Block Diagram
 
-![Block diagram](doc/ram-Overview.png)
+![Block diagram of sbi_ram, ram_1r1w, ram_2r1w and ram_1rw](doc/ram-Overview.png)
 
-- `sbi_ini_i.cs`, `we`, `addr(log2(DEPTH)-1 downto 0)` and `wdata` drive the single port of `u_ram_1rw` (`cke_i = '1'`); `sbi_ini_i.re` is not used.
-- The RAM output is connected directly to `sbi_tgt_o.rdata`; the RAM width is `sbi_ini_i.wdata'length`.
-- The ready logic returns `sbi_tgt_o.ready = cs` with `SYNC_READ = false`, or a registered `ready_r` (high one cycle after `cs`) with `SYNC_READ = true`.
-- `sbi_tgt_o.info.name` is `to_sbi_name(NAME)`, or `to_sbi_name("RAM" & to_string(DEPTH) & "B")` when `NAME = ""`.
-- `ram_1r1w` and `ram_2r1w` are standalone entities, not used by `sbi_ram`.
+## Getting Started
 
-## Top-Level
+The cores of the Asylum IPs are published in the FuseSoC library [asylum-cores](https://github.com/deuskane/asylum-cores) (with the UVVM core used by the testbench):
 
-Top-level entity: **`sbi_ram`** ([hdl/sbi_ram.vhd](hdl/sbi_ram.vhd)), library `asylum`, component declared in `asylum.ram_pkg`.
+```bash
+pip install fusesoc
+fusesoc library add https://github.com/deuskane/asylum-cores
+fusesoc run --target sim_16x8b_sync_read_read_during_write asylum:component:ram  # needs GHDL
+```
 
-### Parameters
-
-| Name | Type | Default | Description |
-|------|------|---------|-------------|
-| `NAME` | string | `""` | Instance name returned in `sbi_tgt_o.info.name`; `""` gives `"RAM<DEPTH>B"` (e.g. `RAM256B`) |
-| `DEPTH` | natural | `256` | Number of words, power of 2; the RAM instance uses `2**log2(DEPTH)` words (rounded down to a power of 2 to match the address width; a simulation assertion of severity `error` reports a `DEPTH` that is not a power of 2) |
-| `SYNC_READ` | boolean | `false` | `false`: asynchronous read, `ready = cs`; `true`: synchronous read, one wait state |
-
-### Ports
-
-#### Clock & Reset
-
-| Name | Direction | Type | Description |
-|------|-----------|------|-------------|
-| `clk_i` | in | std_logic | Clock |
-| `arst_b_i` | in | std_logic | Asynchronous reset, active low (only resets `ready_r`, used when `SYNC_READ = true`) |
-
-#### Bus (SBI)
-
-| Name | Direction | Type | Description |
-|------|-----------|------|-------------|
-| `sbi_ini_i` | in | sbi_ini_t | SBI request from the initiator (`cs`, `we`, `addr`, `wdata`; `re` unused). `addr` must have at least `log2(DEPTH)` bits |
-| `sbi_tgt_o` | out | sbi_tgt_t | SBI response to the initiator (`ready`, `rdata`, `info`) |
-
-### Instantiation Example
+To use the IP in your design, add `asylum:component:ram` to the `depend` list of your core and instantiate a RAM (library `asylum`, components in `asylum.ram_pkg`):
 
 ```vhdl
 library asylum;
 use     asylum.sbi_pkg.all;
 use     asylum.ram_pkg.all;
 
-  ins_sbi_ram : entity asylum.sbi_ram
+  -- Data memory of 128 bytes on the SBI bus
+  ins_sbi_ram : sbi_ram
     generic map
     ( NAME      => "RAM0"
      ,DEPTH     => 128
@@ -123,214 +106,234 @@ use     asylum.ram_pkg.all;
     port map
     ( clk_i     => clk
      ,arst_b_i  => arst_b
-     ,sbi_ini_i => sbi_inis(RAM0_ID)  -- sbi_ini_t(addr(7 downto 0), wdata(7 downto 0))
-     ,sbi_tgt_o => sbi_tgts(RAM0_ID)  -- sbi_tgt_t(rdata(7 downto 0))
+     ,sbi_ini_i => sbi_ini           -- 8-bit data, at least 7 address bits
+     ,sbi_tgt_o => sbi_tgt
+    );
+
+  -- Register file: 16 words of 8 bits, two combinational reads
+  ins_regfile : ram_2r1w
+    generic map
+    ( WIDTH     => 8
+     ,DEPTH     => 16
+     ,SYNC_READ => false
+    )
+    port map
+    ( clk_i     => clk
+     ,cke_i     => '1'
+     ,re0_i     => '1'
+     ,raddr0_i  => rs1
+     ,rdata0_o  => rs1_data
+     ,re1_i     => '1'
+     ,raddr1_i  => rs2
+     ,rdata1_o  => rs2_data
+     ,we_i      => rd_we
+     ,waddr_i   => rd
+     ,wdata_i   => rd_data
     );
 ```
 
-With `DEPTH = 128`, the RAM decodes `addr(6 downto 0)`; the data width is the width of the `wdata` / `rdata` fields of the connected SBI signals (`SBI_DATA_WIDTH = 8` in `asylum.sbi_pkg`).
+[PicoSoC](https://github.com/deuskane/asylum-soc-picosoc) is a complete example: its data memories are `sbi_ram` instances.
 
-## HDL Modules
+## Hardware Interfaces
 
-| File | Unit | Kind | Role |
-|------|------|------|------|
-| [hdl/ram_pkg.vhd](hdl/ram_pkg.vhd) | `ram_pkg` | package | Component declarations of `ram_1r1w`, `ram_1rw`, `ram_2r1w` and `sbi_ram` |
-| [hdl/ram_1r1w.vhd](hdl/ram_1r1w.vhd) | `ram_1r1w` | entity | RAM with one read port and one write port (used by `asylum:component:fifo`) |
-| [hdl/ram_2r1w.vhd](hdl/ram_2r1w.vhd) | `ram_2r1w` | entity | RAM with two read ports and one write port |
-| [hdl/ram_1rw.vhd](hdl/ram_1rw.vhd) | `ram_1rw` | entity | Single-port RAM (shared address, `cs` / `we`) |
-| [hdl/sbi_ram.vhd](hdl/sbi_ram.vhd) | `sbi_ram` | entity | Top-level: SBI target wrapper around `ram_1rw` |
+Top-level entity: **`sbi_ram`** ([hdl/sbi_ram.vhd](hdl/sbi_ram.vhd)). The RAMs without bus are below.
 
-### ram_1r1w
-
-#### Parameters
-
-| Name | Type | Default | Description |
-|------|------|---------|-------------|
-| `WIDTH` | natural | `32` | Word width in bits |
-| `DEPTH` | natural | `32` | Number of words, power of 2 (simulation assertion of severity `error` otherwise) |
-| `SYNC_READ` | boolean | `false` | `false`: combinational read (`re_i` ignored); `true`: registered read when `cke_i = re_i = 1` |
-
-#### Ports
+### Clock and Reset
 
 | Name | Direction | Type | Description |
 |------|-----------|------|-------------|
-| `clk_i` | in | std_logic | Clock |
-| `cke_i` | in | std_logic | Clock enable (write and synchronous read) |
-| `re_i` | in | std_logic | Read enable (`SYNC_READ = true` only) |
-| `raddr_i` | in | std_logic_vector(log2(DEPTH)-1 downto 0) | Read address |
-| `rdata_o` | out | std_logic_vector(WIDTH-1 downto 0) | Read data |
-| `we_i` | in | std_logic | Write enable |
-| `waddr_i` | in | std_logic_vector(log2(DEPTH)-1 downto 0) | Write address |
-| `wdata_i` | in | std_logic_vector(WIDTH-1 downto 0) | Write data |
+| `clk_i` | in | std_logic | System clock, the only clock of the IP |
+| `arst_b_i` | in | std_logic | Asynchronous reset, active low: only `ready_r` (`SYNC_READ = true`), the memory has no reset |
 
-### ram_2r1w
-
-#### Parameters
-
-| Name | Type | Default | Description |
-|------|------|---------|-------------|
-| `WIDTH` | natural | `32` | Word width in bits |
-| `DEPTH` | natural | `32` | Number of words, power of 2 (simulation assertion of severity `error` otherwise) |
-| `SYNC_READ` | boolean | `false` | `false`: combinational reads (`re0_i` / `re1_i` ignored); `true`: each read port registered when `cke_i` and its `re*_i` are 1 |
-
-#### Ports
+### Bus (SBI)
 
 | Name | Direction | Type | Description |
 |------|-----------|------|-------------|
-| `clk_i` | in | std_logic | Clock |
-| `cke_i` | in | std_logic | Clock enable (write and synchronous reads) |
-| `re0_i` | in | std_logic | Read enable, port 0 (`SYNC_READ = true` only) |
-| `raddr0_i` | in | std_logic_vector(log2(DEPTH)-1 downto 0) | Read address, port 0 |
-| `rdata0_o` | out | std_logic_vector(WIDTH-1 downto 0) | Read data, port 0 |
-| `re1_i` | in | std_logic | Read enable, port 1 (`SYNC_READ = true` only) |
-| `raddr1_i` | in | std_logic_vector(log2(DEPTH)-1 downto 0) | Read address, port 1 |
-| `rdata1_o` | out | std_logic_vector(WIDTH-1 downto 0) | Read data, port 1 |
-| `we_i` | in | std_logic | Write enable |
-| `waddr_i` | in | std_logic_vector(log2(DEPTH)-1 downto 0) | Write address |
-| `wdata_i` | in | std_logic_vector(WIDTH-1 downto 0) | Write data |
+| `sbi_ini_i` | in | sbi_ini_t | Request from the initiator: `cs`, `we`, `addr` (the `log2(DEPTH)` low bits are used), `wdata`; `re` is not used |
+| `sbi_tgt_o` | out | sbi_tgt_t | Response to the initiator: `ready`, `rdata`, `info` |
 
-### ram_1rw
+The word width of `sbi_ram` is the width of the `wdata` field of the SBI signals it is connected to (`SBI_DATA_WIDTH = 8` in `asylum.sbi_pkg`).
 
-#### Parameters
+### RAMs without bus
+
+[hdl/ram_1r1w.vhd](hdl/ram_1r1w.vhd), [hdl/ram_2r1w.vhd](hdl/ram_2r1w.vhd), [hdl/ram_1rw.vhd](hdl/ram_1rw.vhd). Every RAM has `clk_i` and `cke_i` (clock enable of the write and of the registered read); the addresses are `std_logic_vector(log2(DEPTH)-1 downto 0)`, the data `std_logic_vector(WIDTH-1 downto 0)`.
+
+| Name | Direction | RAM | Description |
+|------|-----------|-----|-------------|
+| `re_i`, `raddr_i`, `rdata_o` | in, in, out | `ram_1r1w` | Read port: read enable (`SYNC_READ = true` only), address, data |
+| `re0_i`, `raddr0_i`, `rdata0_o` | in, in, out | `ram_2r1w` | Read port 0 |
+| `re1_i`, `raddr1_i`, `rdata1_o` | in, in, out | `ram_2r1w` | Read port 1 |
+| `we_i`, `waddr_i`, `wdata_i` | in | `ram_1r1w`, `ram_2r1w` | Write port: write enable, address, data |
+| `cs_i`, `we_i` | in | `ram_1rw` | Chip select, write enable: write when `cs_i = we_i = 1`, registered read when `cs_i = 1` and `we_i = 0` |
+| `addr_i`, `wdata_i`, `rdata_o` | in, in, out | `ram_1rw` | Address of the read and of the write, write data, read data |
+
+## Configuration
 
 | Name | Type | Default | Description |
 |------|------|---------|-------------|
-| `WIDTH` | natural | `32` | Word width in bits |
-| `DEPTH` | natural | `32` | Number of words, power of 2 (simulation assertion of severity `error` otherwise) |
-| `SYNC_READ` | boolean | `false` | `false`: combinational read of `addr_i`; `true`: registered read when `cke_i = cs_i = 1` and `we_i = 0` |
+| `WIDTH` | natural | `32` | `ram_1r1w`, `ram_2r1w`, `ram_1rw`: word width in bits |
+| `DEPTH` | natural | `32` (`sbi_ram`: `256`) | Number of words, a power of 2 (simulation assertion of severity `error` otherwise) |
+| `SYNC_READ` | boolean | `false` | `false`: combinational read; `true`: registered read (`sbi_ram`: one wait state) |
+| `NAME` | string | `""` | `sbi_ram` only: name in `sbi_tgt_o.info`; `""` gives `RAM<DEPTH>B` (e.g. `RAM256B`) |
 
-#### Ports
+The address has `log2(DEPTH)` bits (rounded down): with a `DEPTH` that is not a power of 2, the words `2**log2(DEPTH)` to `DEPTH-1` cannot be addressed (`sbi_ram` instantiates `2**log2(DEPTH)` words).
 
-| Name | Direction | Type | Description |
-|------|-----------|------|-------------|
-| `clk_i` | in | std_logic | Clock |
-| `cke_i` | in | std_logic | Clock enable (write and synchronous read) |
-| `cs_i` | in | std_logic | Chip select |
-| `we_i` | in | std_logic | Write enable (write when `cs_i = we_i = 1`, read when `cs_i = 1`, `we_i = 0`) |
-| `addr_i` | in | std_logic_vector(log2(DEPTH)-1 downto 0) | Address (shared by read and write) |
-| `wdata_i` | in | std_logic_vector(WIDTH-1 downto 0) | Write data |
-| `rdata_o` | out | std_logic_vector(WIDTH-1 downto 0) | Read data |
+## Resources
 
-## Register Map
+Figures of the `syn_*` targets (`make nonreg_syn`, see [Targets](#targets)): each RAM synthesized alone with the generics of the configuration, `ram_1r1w`, `ram_2r1w` and `ram_1rw` as toplevel, `sbi_ram` in [syn/sbi_ram_wrapper.vhd](syn/sbi_ram_wrapper.vhd) (flat SBI ports, 8-bit words), by Yosys and its GHDL plugin; the reports are in the build directory of each target.
 
-This IP has no software-visible registers. `sbi_ram` is memory-mapped storage without CSR: every SBI address below `2**log2(DEPTH)` is a RAM word.
+| Configuration | LUT¹ | LUTRAM¹ | FF¹ | CARRY4¹ | MUXF7/F8¹ | BRAM¹ | DSP¹ | Area² (µm²) | kGE³ |
+|---|---|---|---|---|---|---|---|---|---|
+| `syn_ram_1r1w_32x32b_read_async` | 1 | 24 | 0 | 0 | 0 | 0 | 0 | 39848.22 | 10.616 |
+| `syn_ram_1r1w_256x8b_read_sync` | 13 | 48 | 8 | 0 | 0 | 0 | 0 | 81109.04 | 21.608 |
+| `syn_ram_2r1w_32x32b_read_async` | 1 | 48 | 0 | 0 | 0 | 0 | 0 | 47415.48 | 12.632 |
+| `syn_ram_2r1w_256x8b_read_sync` | 22 | 96 | 16 | 0 | 0 | 0 | 0 | 96665.21 | 25.753 |
+| `syn_ram_1rw_32x32b_read_async` | 1 | 16 | 0 | 0 | 0 | 0 | 0 | 39265.16 | 10.461 |
+| `syn_ram_1rw_256x8b_read_sync` | 2 | 32 | 8 | 0 | 0 | 0 | 0 | 79441.19 | 21.164 |
+| `syn_sbi_ram_32x8b_read_async` | 1 | 4 | 0 | 0 | 0 | 0 | 0 | 10013.35 | 2.668 |
+| `syn_sbi_ram_256x8b_read_sync` | 4 | 32 | 9 | 0 | 0 | 0 | 0 | 79422.42 | 21.159 |
 
-## Verification
+¹ Xilinx Artix-7 (LUT6), Yosys 0.33 `synth_xilinx -flatten -noiopad -noclkbuf`, before place and route: every cell of the netlist is counted, Vivado may differ. **Where the memory goes**: in every configuration Yosys puts the memory in distributed RAM (LUTRAM column, 4 LUTs per `RAM32M`, `RAM64M` or `RAM256X1S` cell), none in a block RAM, even 256x8 with a registered read. The registered read data are flip-flops (`WIDTH` per read port: 8 per port in the 256x8 configurations), plus `ready_r` in `sbi_ram` (its `INV` on the reset pin counts as a `LUT1`). `ram_2r1w` uses twice the LUTRAM of `ram_1r1w`: one copy of the memory per read port. Another tool may choose a block RAM for the registered read: check its read-during-write mode (see [Read during write](#read-during-write)).
 
-### Testbenches
+² SkyWater sky130 `sky130_fd_sc_hd`, typical corner (tt, 25 °C, 1.80 V), Yosys 0.33 `synth` + `dfflibmap` + `abc -liberty`: standard-cell area only, no timing constraint, no buffering, clock tree or placement. **Where the memory goes**: there is no SRAM macro, the memory becomes flip-flops, `DEPTH x WIDTH` of them (256 for 32x8, 1024 for 32x32, 2048 for 256x8), plus the registered read data and the read multiplexers: the area grows mostly with the number of bits, a second read port adds its multiplexer (`ram_2r1w`).
+
+³ Area in thousands of NAND2 gate equivalents (`sky130_fd_sc_hd__nand2_1` = 3.7536 µm²).
+
+## Theory of Operation
+
+### Hierarchy
+
+| File | Unit | Role |
+|------|------|------|
+| [hdl/ram_1r1w.vhd](hdl/ram_1r1w.vhd) | `ram_1r1w` | One read port, one write port |
+| [hdl/ram_2r1w.vhd](hdl/ram_2r1w.vhd) | `ram_2r1w` | Two read ports, one write port |
+| [hdl/ram_1rw.vhd](hdl/ram_1rw.vhd) | `ram_1rw` | Single port |
+| [hdl/sbi_ram.vhd](hdl/sbi_ram.vhd) | `sbi_ram` | `ram_1rw` on the SBI bus, ready logic, target name |
+| [hdl/ram_pkg.vhd](hdl/ram_pkg.vhd) | `ram_pkg` | Components |
+
+### Write and read
+
+![Read during write and registered read](doc/ram-read.svg)
+
+- The memory `ram_r` is an array of `DEPTH` words without reset. A word is written on the rising edge of `clk_i` when `cke_i = 1` and the write is enabled (`we_i`, or `cs_i and we_i` for `ram_1rw`).
+- `SYNC_READ = false`: `rdata` is `ram_r(raddr)`, combinational: it follows the address, and a word written on an edge is visible right after it. The read enables are not used.
+- `SYNC_READ = true`: `rdata_r` loads `ram_r(raddr)` on the rising edge when `cke_i = 1` and the read enable of the port is 1 (`ram_1rw`: `cs_i = 1` and `we_i = 0`); it keeps its value otherwise, also during a write of `ram_1rw`.
+- `ram_2r1w` reads two addresses in the same cycle, each port with its own read enable and read register.
+
+### Read during write
+
+- With `SYNC_READ = true`, a read and a write of the same address on the same enabled edge return the **old** word (read-first): the registered read samples the memory before the write. It is the behaviour of the RTL, checked by the scenario `read_during_write` of the testbench.
+- On an FPGA, the contract holds only if the inferred memory keeps it: many dual-port block RAMs are write-first or undefined on a collision. Check the mode chosen by the tool for each RAM that can read and write the same address in the same cycle.
+- A design that must not depend on it never reads and writes the same address in the same cycle, or adds its own bypass (`fifo_sync` of [asylum-component-fifo](https://github.com/deuskane/asylum-component-fifo) registers the written word for this case).
+
+### `sbi_ram`
+
+- `sbi_ini_i.cs`, `we`, `addr(log2(DEPTH)-1 downto 0)` and `wdata` drive `ram_1rw` (`cke_i = 1`), its read data is `sbi_tgt_o.rdata`.
+- Only the `log2(DEPTH)` low address bits are decoded: the RAM is repeated above (the interconnect decodes the base address).
+- `SYNC_READ = false`: `ready = cs`, every access takes one cycle.
+- `SYNC_READ = true`: `ready_r <= cs and not ready_r`: `ready` rises one cycle after `cs` (the read data are registered) and falls the next cycle, every access takes two cycles. A write held two cycles writes the same word twice.
+- `sbi_tgt_o.info.name` is `NAME`, or `RAM<DEPTH>B` when `NAME = ""`.
+
+## Registers
+
+This IP has no software-visible registers: every SBI address of `sbi_ram` below `2**log2(DEPTH)` is a word of the memory.
+
+## Programmer's Guide
+
+`sbi_ram` has no registers: software reads and writes its words as plain memory (one byte per address with the 8-bit SBI bus); the memory is not initialized, write a word before reading it.
+
+## Design Verification
+
+### Testbench
 
 | File | DUT | Description |
 |------|-----|-------------|
-| [sim/tb_ram.vhd](sim/tb_ram.vhd) | `ram_1r1w`, `ram_2r1w`, `ram_1rw` and `sbi_ram` (testbench generics `WIDTH`, `DEPTH`, `SYNC_READ`) | Self-checking UVVM testbench. The three RAMs receive the same write stream (`ram_1rw`: `cs = we or re0`, address = write address when writing, else read address 0) and share one reference model; every cycle the read data of each port are compared with the model (combinational read, or the word registered by the last enabled read with `SYNC_READ = true`). Tests: 1) write all words; 2) read all words (port 1 in reverse order); 3) read and write of the same address in the same cycle (old word, then new word); 4) `cke_i = 0` blocks writes and registered reads; 5) read enable low holds the registered read data, a `ram_1rw` write does not update it; 6) 1000 random cycles (reads, writes, `cke_i`). `sbi_ram` through the SBI BFM (`bitvis_vip_sbi`): 7) write / check of all words, back-to-back write+check, wait states measured on every access (0 with `SYNC_READ = false`, 1 with `SYNC_READ = true`) and `ready` never set without `cs`; 8) address aliasing: the word written at `DEPTH+3` is read at `3`, `DEPTH+3`, `2*DEPTH+3`, `3*DEPTH+3`; 9) default `info.name = "RAM<DEPTH>B"`. `report_alert_counters(FINAL)` gives the verdict (4329 to 5342 checks per target) |
+| [sim/ram/tb_ram.vhd](sim/ram/tb_ram.vhd) | `ram_1r1w`, `ram_2r1w`, `ram_1rw`, `sbi_ram` | Self-checking UVVM testbench, generics `TESTS_LIST` (scenarios, see below), `WIDTH`, `DEPTH` (power of 2, >= 16), `SYNC_READ`. The three RAMs without bus receive the same accesses (`ram_1rw`: `cs = we or re0`, address = write address during a write, else read address 0) and share one reference model: every cycle the inputs are driven on the falling edge of the clock and the read data of every port are checked a quarter period later, against the content (combinational read) or the word registered by the last enabled read. `sbi_ram` is driven by the SBI BFM (`bitvis_vip_sbi`); a monitor measures the wait states of every access and raises an error if `ready` is set without `cs`. A second `sbi_ram` with `NAME = "RAM0"` is only used for its name |
+
+Scenarios in `tb_ram_<name>_pkg`, cycle, model and SBI helpers in [tb_ram_bfm_pkg](sim/ram/tb_ram_bfm_pkg.vhd), names and dispatch in [tb_ram_tests_pkg](sim/ram/tb_ram_tests_pkg.vhd).
+
+### Scenarios (`TESTS_LIST`)
+
+The scenarios are chosen at run time with the generic `TESTS_LIST`: names separated by `,` without space (`write_read,random,write_read`), a name may be repeated. The sequencer first checks every name (an unknown name is a `TB_ERROR` before any scenario runs), then for each scenario drives a reset pulse with the RAM inputs and the bus inactive, empties the reference model, logs `TEST <i>/<N> : <name>` and runs it. The memories are not reset: each scenario writes the words it reads (the model checks a word only once written by the scenario). The empty list (default) only compiles and elaborates the testbench. The list is parsed and its names checked with `list_length` / `list_item` / `list_contains` of `asylum.string_pkg` (`asylum:utils:pkg` >= 1.10.0).
+
+Checks counted as the `=> OK` lines of the log, reference configuration (16 words of 8 bits, `SYNC_READ = true`):
+
+| Name | Checks | Description |
+|------|--------|-------------|
+| `write_read` | 68 | Write of every word, then read of every word (`ram_2r1w` port 1 in reverse order); the idle cycles hold the registered read data |
+| `read_during_write` | 127 | Read and write of the same address on the same edge: the registered read returns the old word, the next read the new word |
+| `clock_enable` | 20 | `cke_i = 0` blocks the writes and the registered reads of every port |
+| `read_enable` | 16 | A read enable at 0 holds the registered read data while the address changes; a write of `ram_1rw` does not update its registered read data |
+| `write_enable` | 124 | A write not selected (`we_i = 0` on `ram_1r1w` / `ram_2r1w`, `cs_i = 0` with `we_i = 1` on `ram_1rw`) does not change the word |
+| `random` | 3999 | 1000 random cycles: reads (60 %), writes (50 %), `cke_i = 1` (90 %), random addresses and data, fixed seeds |
+| `sbi_write_read` | 80 | `sbi_ram`: write then read of every word, then back-to-back write and read of each word; wait states of every access (0, or 1 with `SYNC_READ`) |
+| `sbi_aliasing` | 9 | `sbi_ram`: the word written at `DEPTH+3` is read at 3, `DEPTH+3`, `2*DEPTH+3` and `3*DEPTH+3`; wait states |
+| `sbi_name` | 2 | `sbi_tgt_o.info.name`: `RAM<DEPTH>B` with `NAME = ""`, `NAME` otherwise |
+
+With `SYNC_READ = false` the read data are checked on every cycle (no registered data to wait for): more checks, e.g. 4769 in `sim_16x8b_async_read`.
 
 ### Targets
 
 | Target | Toplevel | Description |
 |--------|----------|-------------|
-| `default` | `ram_1r1w` | HDL fileset only (not a simulation) |
-| `sim_16x8b_async_read` | `tb_ram` | All RAMs and `sbi_ram`, asynchronous read (`WIDTH=8`, `DEPTH=16`, `SYNC_READ=false`) |
-| `sim_16x8b_sync_read` | `tb_ram` | All RAMs and `sbi_ram`, synchronous read (`WIDTH=8`, `DEPTH=16`, `SYNC_READ=true`) |
-| `sim_64x32b_async_read` | `tb_ram` | All RAMs and `sbi_ram`, asynchronous read (`WIDTH=32`, `DEPTH=64`, `SYNC_READ=false`) |
-| `sim_64x32b_sync_read` | `tb_ram` | All RAMs and `sbi_ram`, synchronous read (`WIDTH=32`, `DEPTH=64`, `SYNC_READ=true`) |
-| `lint_ghdl` | `asylum.ram_wrapper` | Lint: GHDL `-Wall` analysis and elaboration (empty simulation) of `ram_1r1w`, `ram_2r1w`, `ram_1rw` and `sbi_ram` in a wrapper with flat ports (`syn/ram_wrapper.vhd`) |
-| `lint_ghdl_synth_default` | `asylum.ram_wrapper` | Synthesis check (see below), 32x32 bits, asynchronous read (default generics) |
-| `lint_ghdl_synth_32x32b_read_sync` | `asylum.ram_wrapper` | Synthesis check, 32x32 bits, synchronous read: `SYNC_READ=true` |
-| `lint_ghdl_synth_16x8b_read_async` | `asylum.ram_wrapper` | Synthesis check, 16x8 bits, asynchronous read: `WIDTH=8`, `DEPTH=16` |
-| `lint_ghdl_synth_16x8b_read_sync` | `asylum.ram_wrapper` | Synthesis check, 16x8 bits, synchronous read: `WIDTH=8`, `DEPTH=16`, `SYNC_READ=true` |
-| `lint_ghdl_synth_256x8b_read_sync` | `asylum.ram_wrapper` | Synthesis check, 256x8 bits, synchronous read: `WIDTH=8`, `DEPTH=256`, `SYNC_READ=true` |
+| `default` | `ram_1r1w` | HDL fileset (not a simulation) |
+| `sim_16x8b_sync_read` | `tb_ram` | Reference configuration (`WIDTH = 8`, `DEPTH = 16`, `SYNC_READ = true`): build and elaboration only (`TESTS_LIST` empty), base of the scenario targets and of the list runs |
+| `sim_16x8b_sync_read_<name>` | `tb_ram` | One target per scenario: `sim_16x8b_sync_read_write_read`, `_read_during_write`, `_clock_enable`, `_read_enable`, `_write_enable`, `_random`, `_sbi_write_read`, `_sbi_aliasing`, `_sbi_name` (4445 checks in all) |
+| `sim_16x8b_async_read` | `tb_ram` | `WIDTH = 8`, `DEPTH = 16`, `SYNC_READ = false`, every scenario (4769 checks) |
+| `sim_64x32b_sync_read` | `tb_ram` | `WIDTH = 32`, `DEPTH = 64`, `SYNC_READ = true`, every scenario (5645 checks) |
+| `sim_64x32b_async_read` | `tb_ram` | `WIDTH = 32`, `DEPTH = 64`, `SYNC_READ = false`, every scenario (6833 checks) |
+| `lint_ghdl` | `asylum.sbi_ram_wrapper` | GHDL `-Wall` analysis of every RAM and of [syn/sbi_ram_wrapper.vhd](syn/sbi_ram_wrapper.vhd) (`sbi_ram` with flat SBI ports), elaboration of `sbi_ram_wrapper` |
+| `lint_ghdl_synth_<ram>_<config>` | the RAM, or `sbi_ram_wrapper` | `ghdl --synth` check (no latch, synthesizable) of `ram_1r1w`, `ram_2r1w`, `ram_1rw`: `32x32b_read_async` (default generics), `256x8b_read_sync`; of `sbi_ram`: `32x8b_read_async`, `256x8b_read_sync` |
 
-A `lint_ghdl_synth_*` target is `lint_ghdl` with the generics of its configuration (FuseSoC `parameters`) and a `pre_run` hook, `ghdl_synth.sh` of the core `asylum:utils:ghdl_synth` (`tools/ghdl` of asylum-utils-generators, in a core without dependency: `ram` cannot depend on generators, dependency cycle generators -> fifo -> ram -> pkg), which adds `include ghdl_synth.mk` to the Makefile generated by edalize. The run step (`make run EXTRA_OPTIONS=<generics>`) then runs, in the build directory:
+The reference configuration has a build-only base target and one target per scenario: one CI job per scenario, a failure is isolated. Every other configuration has one target that runs the whole list: the `TEST <i>/<N>` header names a failing scenario. FuseSoC replaces the `parameters` list of an inherited target, so each target repeats the generics of its configuration.
 
-1. `ghdl --synth` of the toplevel (rule `ghdl_synth` of `ghdl_synth.mk`, same core), with the options of the target: `STD`, `ANALYZE_OPTIONS` (`-Wall`), `TOPLEVEL_LIBS`, `TOPLEVEL` and the generics. It writes `ram_wrapper_synth.vhd` (netlist) and `ram_wrapper_synth.log`, prints the warnings, and fails on a synthesis error (an inferred latch is one);
-2. `ghdl -r --no-run`: elaboration with the same generics, without simulation.
-
-To add a configuration, add a target with its `parameters` (the generics are declared in the `parameters` section of `ram.core`).
-
-The `.core` parameters `WIDTH` (int, 8), `DEPTH` (int, 16) and `SYNC_READ` (bool, false) are the testbench generics set by the `sim_*` targets (`DEPTH` must be a power of 2, at least 16).
+Every `sim_*`, `lint_*` and `syn_*` target is a job of the [GitHub CI](https://github.com/deuskane/asylum-component-ram/actions/workflows/ci.yml), run in the [asylum-env](https://github.com/deuskane/asylum-ci) image (GHDL, FuseSoC, UVVM, Yosys). The `sim`, `lint` and `syn` badges count the passed and failed targets of the last run on `main`.
 
 ### How to Run
 
-The default tool is GHDL (`mk/defs.mk`: `TOOL ?= ghdl`, `TARGET ?= sim_16x8b_sync_read`).
+From a clone of [asylum-project](https://github.com/deuskane/asylum-project) (GHDL and FuseSoC installed, or in the asylum-env image):
 
 ```bash
-make help                 # variables, rules and target list (mk/targets.txt)
-make sim_16x8b_sync_read  # run one target (log in log/)
-make nonreg_sim           # run every sim_* target
-make lint_ghdl            # GHDL -Wall lint (make nonreg_lint: every lint_* target)
-make lint_ghdl_synth_default   # GHDL -Wall lint + ghdl --synth -Wall check of one configuration
-make clean                # remove build/
+make help                                    # variables, rules and targets
+make sim_16x8b_sync_read_read_during_write   # one scenario, log in log/
+make sim_64x32b_async_read                   # every scenario of a configuration
+make nonreg_sim                              # every sim_* target
+make nonreg_lint                             # every lint_* target
+make nonreg_syn                              # every syn_* target (Yosys, figures of Resources)
+make TARGETS_FILTER=sbi_ram nonreg_syn
 ```
 
-Equivalent FuseSoC command:
+To run a list of scenarios, build the testbench once, then run the list without recompiling, either with FuseSoC (same `--build-root` and `--no-export` as the Makefile, so that the build of the target is reused; any generic of the target can be overridden after the VLNV):
 
 ```bash
-fusesoc --cores-root . run --build-root build --target sim_16x8b_sync_read asylum:component:ram:1.2.3
+make sim_16x8b_sync_read                     # build and elaboration (TESTS_LIST empty)
+fusesoc --cores-root . run --build-root build --no-export --run --target sim_16x8b_sync_read asylum:component:ram:1.2.3 --TESTS_LIST=random,write_read
 ```
 
-### Simulation Features
+or in the build directory of the target. `EXTRA_OPTIONS` replaces every generic set by the target: repeat the generics of the configuration, else their default values apply:
 
-- All `sim_*` targets analyze with `-Wall -fsynopsys -frelaxed --no-vital-checks` and run with `--fst=dut.fst --ieee-asserts=disable` (waveform always written to `dut.fst`).
-- `ram_1r1w`, `ram_1rw`, `ram_2r1w` and `sbi_ram` assert (severity `error`, inside `pragma translate_off`) that `DEPTH` is a power of 2.
-
-## Synthesis
-
-No vendor synthesis target (the `lint_ghdl_synth_*` targets check the RTL with `ghdl --synth`, see [Targets](#targets)). The HDL of the `default` target is synthesizable: the only simulation-only construct is the `DEPTH` power-of-2 assertion, enclosed in `pragma translate_off / translate_on` (no `textio`, file access or `wait`). The sources are VHDL-2008 (`file_type: vhdlSource-2008`): `sbi_ram` uses the unconstrained records of `sbi_pkg` (`sbi_ini_i.wdata'length`) and `to_string(integer)`, and `ram_pkg` declares `sbi_ram` with these records, so a per-file tool (Vivado, Questa) must compile them in VHDL-2008 mode. The memory array is a plain signal array without reset, written synchronously, so it is inferred as RAM:
-
-- `SYNC_READ = true`: registered read port(s), suitable for block RAM.
-- `SYNC_READ = false`: asynchronous read, which maps to distributed / LUT RAM or registers.
-- `ram_2r1w` needs two read ports on the same array (two RAM copies or a multi-port primitive, depending on the tool).
-- Resource usage is `WIDTH x DEPTH` bits (`DEPTH` rounded down to a power of 2 in `sbi_ram`).
-
-## Design Notes
-
-### Read / Write Timing
-
-- Writes happen on the rising edge of `clk_i` when `cke_i = 1` and the write condition is true (`we_i`, or `cs_i and we_i` for `ram_1rw`).
-- Asynchronous read: `rdata` follows the read address combinationally; a word written on an edge is visible right after it.
-- Synchronous read: `rdata` is the content at the address sampled on the edge (read-before-write: a read and a write to the same address on the same edge return the old word) and holds its value when the read enable is low.
-
-### Read During Write
-
-- Contract of `ram_1r1w` / `ram_2r1w` with `SYNC_READ = true`: a read and a write of the same address on the same enabled edge return the **old** word (read-first). It is the RTL and simulation behaviour, checked by test 3 of `tb_ram`.
-- On a target, this contract holds only if the inferred block RAM is configured read-first (or if the synthesis tool adds the bypass logic): many dual-port blocks are write-first or undefined on a same-address collision. Check the mode chosen by the tool for each instance that can collide (e.g. `NX_RAM` mode in the nxmap report on NG-MEDIUM).
-- A design that must not depend on it either never reads and writes the same address in the same cycle, or adds its own bypass (`fifo_sync` registers the written word for this case). Known user exposed to it: `OpenBlaze8_RegFile` with `REGFILE_SYNC_READ = true` (read address = write address).
-- `ram_1rw` has a single address: a write cycle does not update the registered read data. With `SYNC_READ = false` the read is combinational and the written word is visible right after the edge.
-- Address width is `log2(DEPTH)` (floor), so `DEPTH` must be a power of 2 to address every word: with another value the words `2**log2(DEPTH)` to `DEPTH-1` of `ram_*` are unreachable and `sbi_ram` is rounded down to `2**log2(DEPTH)` words. The rounding keeps the array size equal to the addressable range and the port widths unchanged; since it silently loses words, a simulation assertion now reports it.
-- `sbi_ram` decodes only the `log2(DEPTH)` LSBs of the SBI address: higher addresses alias onto the RAM (the interconnect is expected to decode the base address).
-
-### sbi_ram Handshake
-
-- `SYNC_READ = false`: `ready = cs`, every access completes in the cycle it is issued.
-- `SYNC_READ = true`: `ready_r <= cs and not ready_r`; `ready` rises one cycle after `cs` (the cycle in which the registered read data is valid) and falls the next cycle, so an access held until `ready` takes two cycles. A write with `cs` held for two cycles writes the same word twice.
-
-## Directory Structure
-
-```
-asylum-component-ram/
-├── ram.core                # FuseSoC core (asylum:component:ram)
-├── Makefile                # Common Asylum Makefile (FuseSoC wrapper)
-├── mk/
-│   ├── defs.mk             # FILE_CORE, default TARGET and TOOL
-│   └── targets.txt         # Target list (generated from the .core)
-├── doc/
-│   └── ram.drawio          # Block diagram
-├── hdl/
-│   ├── ram_pkg.vhd
-│   ├── ram_1r1w.vhd
-│   ├── ram_2r1w.vhd
-│   ├── ram_1rw.vhd
-│   └── sbi_ram.vhd
-├── sim/
-│   └── tb_ram.vhd          # UVVM testbench (all RAMs, sbi_ram)
-├── syn/
-│   └── ram_wrapper.vhd     # Lint / synthesis check wrapper (all RAMs, flat ports)
-└── .github/workflows/ci.yml  # CI (sim_16x8b_*_read, sim_64x32b_*_read)
+```bash
+cd build/asylum_component_ram_1.2.3/sim_16x8b_sync_read-ghdl
+make run EXTRA_OPTIONS="-gTESTS_LIST=random,write_read -gWIDTH=8 -gDEPTH=16 -gSYNC_READ=true"
 ```
 
-## Dependencies
+To add a scenario: a `tb_ram_<name>_pkg` package with a `run` procedure in the `files_sim` fileset, its name in `C_TESTS` and its case in `run_test` of [tb_ram_tests_pkg](sim/ram/tb_ram_tests_pkg.vhd), a `sim_16x8b_sync_read_<name>` target and the name in the `TESTS_LIST` of the other configurations in [ram.core](ram.core), then `make mk/targets.txt` and `make ci_generate`.
 
-| Core | Used by (fileset) | Purpose |
-|------|-------------------|---------|
-| `asylum:utils:pkg` | `files_hdl` | Common packages (`math_pkg`: `log2`; `sbi_pkg`: SBI records, `to_sbi_name`) |
-| `asylum:utils:ghdl_synth` | `syn` | `ghdl_synth.sh` / `ghdl_synth.mk` (`pre_run` hook of `lint_ghdl_synth_*`) |
-| `bitvis:verification:uvvm` | `files_sim` | UVVM utility library and SBI BFM (`bitvis_vip_sbi`) |
+Outside the CI, GHDL writes a waveform `dut.fst`.
+
+## Dependencies and Related IPs
+
+| Core | Repository | Purpose |
+|------|------------|---------|
+| `asylum:utils:pkg` | [asylum-utils-pkg](https://github.com/deuskane/asylum-utils-pkg) | `math_pkg` (`log2`), `sbi_pkg` (SBI records, `to_sbi_name`); the testbench needs >= 1.10.0 (`string_pkg` lists of `TESTS_LIST`) |
+| `asylum:utils:ghdl_synth` | [asylum-utils-generators](https://github.com/deuskane/asylum-utils-generators) | `ghdl --synth` check of the `lint_ghdl_synth_*` targets |
+| `asylum:utils:yosys_synth` | [asylum-utils-generators](https://github.com/deuskane/asylum-utils-generators) | Yosys synthesis of the `syn_*` targets (Artix-7 and sky130) |
+| `bitvis:verification:uvvm` | [UVVM](https://github.com/UVVM/UVVM) | Verification library and SBI BFM |
+
+The synthesis checks use the dependency-free cores `ghdl_synth` and `yosys_synth`, not `asylum:utils:generators`: the generators depend on the FIFO, which depends on this IP.
+
+Used by [asylum-component-fifo](https://github.com/deuskane/asylum-component-fifo) and [asylum-component-stack](https://github.com/deuskane/asylum-component-stack) (`ram_1r1w`), and [asylum-soc-picosoc](https://github.com/deuskane/asylum-soc-picosoc) (`sbi_ram`); the register banks generated by regtool use it through the FIFO. All the IPs: [asylum-project](https://github.com/deuskane/asylum-project).
+
+## License
+
+Apache License 2.0, see [LICENSE](LICENSE).
