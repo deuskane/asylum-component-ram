@@ -68,18 +68,26 @@ filesets:
       - ">=asylum:utils:pkg:1.10.0"
 
   #---------------------------------------
-  # Lint / synthesis check : wrapper, and ghdl_synth.sh / ghdl_synth.mk
-  # (pre_run hook of lint_ghdl_synth_*) of asylum:utils:ghdl_synth, a core
-  # without dependency (ram cannot depend on generators : cycle
-  # generators -> fifo -> ram -> pkg)
+  # Lint / synthesis check : wrapper of sbi_ram, and ghdl_synth.sh /
+  # ghdl_synth.mk (pre_run hook of lint_ghdl_synth_*) of
+  # asylum:utils:ghdl_synth, a core without dependency (ram cannot depend
+  # on generators : cycle generators -> fifo -> ram -> pkg)
   #---------------------------------------
   syn:
     files        :
-      - syn/ram_wrapper.vhd
+      - syn/sbi_ram_wrapper.vhd
     file_type    : vhdlSource-2008
     logical_name : asylum
     depend       :
       - asylum:utils:ghdl_synth
+
+  #---------------------------------------
+  # Synthesis : yosys_synth.sh / yosys_synth.mk / yosys_synth.py (pre_run
+  # hook of syn_*) of asylum:utils:yosys_synth, a core without dependency
+  #---------------------------------------
+  syn_yosys:
+    depend       :
+      - asylum:utils:yosys_synth
 
 targets:
 
@@ -98,8 +106,8 @@ targets:
   #---------------------------------------
   lint_ghdl : &lint_ghdl
     << : *default
-    description     : Lint with GHDL (-Wall analysis and elaboration of ram_wrapper, all RAMs)
-    toplevel        : asylum.ram_wrapper
+    description     : Lint with GHDL (-Wall analysis of all the RAMs, elaboration of sbi_ram_wrapper)
+    toplevel        : asylum.sbi_ram_wrapper
     filesets_append : [syn]
     default_tool    : ghdl
     tools :
@@ -108,54 +116,455 @@ targets:
 
   #---------------------------------------
   # Synthesis check : -Wall analysis, ghdl --synth -Wall and elaboration
-  # (no simulation) of ram_wrapper with the generics of the target.
+  # (no simulation) of one RAM with the generics of the target : ram_1r1w,
+  # ram_2r1w and ram_1rw are their own toplevel, sbi_ram is in
+  # sbi_ram_wrapper (flat SBI ports).
   # The pre_run hook (ghdl_synth.sh of asylum:utils:ghdl_synth) adds
   # ghdl_synth.mk to the edalize Makefile.
   # FuseSoC merges tools in depth : analyze_options comes from lint_ghdl.
   #---------------------------------------
-  lint_ghdl_synth_default : &lint_ghdl_synth
+  lint_ghdl_synth_ram_1r1w_32x32b_read_async : &lint_ghdl_synth
     << : *lint_ghdl
-    description     : Synthesis check of ram_wrapper, 32x32 bits, asynchronous read (default generics)
+    description     : Synthesis check of ram_1r1w, 32x32 bits, asynchronous read (default generics)
+    toplevel        : asylum.ram_1r1w
     tools :
       ghdl :
         run_options     : ["--no-run"]
     hooks :
       pre_run : [ghdl_synth]
+    parameters      :
+      - WIDTH=32
+      - DEPTH=32
+      - SYNC_READ=false
 
   #---------------------------------------
-  lint_ghdl_synth_32x32b_read_sync :
+  lint_ghdl_synth_ram_1r1w_32x32b_read_sync :
   #---------------------------------------
     << : *lint_ghdl_synth
-    description     : Synthesis check of ram_wrapper, 32x32 bits, synchronous read
+    description     : Synthesis check of ram_1r1w, 32x32 bits, synchronous read
+    toplevel        : asylum.ram_1r1w
     parameters      :
+      - WIDTH=32
+      - DEPTH=32
       - SYNC_READ=true
 
   #---------------------------------------
-  lint_ghdl_synth_16x8b_read_async :
+  lint_ghdl_synth_ram_1r1w_16x8b_read_async :
   #---------------------------------------
     << : *lint_ghdl_synth
-    description     : Synthesis check of ram_wrapper, 16x8 bits, asynchronous read
+    description     : Synthesis check of ram_1r1w, 16x8 bits, asynchronous read
+    toplevel        : asylum.ram_1r1w
     parameters      :
       - WIDTH=8
       - DEPTH=16
+      - SYNC_READ=false
 
   #---------------------------------------
-  lint_ghdl_synth_16x8b_read_sync :
+  lint_ghdl_synth_ram_1r1w_16x8b_read_sync :
   #---------------------------------------
     << : *lint_ghdl_synth
-    description     : Synthesis check of ram_wrapper, 16x8 bits, synchronous read
+    description     : Synthesis check of ram_1r1w, 16x8 bits, synchronous read
+    toplevel        : asylum.ram_1r1w
     parameters      :
       - WIDTH=8
       - DEPTH=16
       - SYNC_READ=true
 
   #---------------------------------------
-  lint_ghdl_synth_256x8b_read_sync :
+  lint_ghdl_synth_ram_1r1w_256x8b_read_sync :
   #---------------------------------------
     << : *lint_ghdl_synth
-    description     : Synthesis check of ram_wrapper, 256x8 bits, synchronous read
+    description     : Synthesis check of ram_1r1w, 256x8 bits, synchronous read
+    toplevel        : asylum.ram_1r1w
     parameters      :
       - WIDTH=8
+      - DEPTH=256
+      - SYNC_READ=true
+
+  #---------------------------------------
+  lint_ghdl_synth_ram_2r1w_32x32b_read_async :
+  #---------------------------------------
+    << : *lint_ghdl_synth
+    description     : Synthesis check of ram_2r1w, 32x32 bits, asynchronous read (default generics)
+    toplevel        : asylum.ram_2r1w
+    parameters      :
+      - WIDTH=32
+      - DEPTH=32
+      - SYNC_READ=false
+
+  #---------------------------------------
+  lint_ghdl_synth_ram_2r1w_32x32b_read_sync :
+  #---------------------------------------
+    << : *lint_ghdl_synth
+    description     : Synthesis check of ram_2r1w, 32x32 bits, synchronous read
+    toplevel        : asylum.ram_2r1w
+    parameters      :
+      - WIDTH=32
+      - DEPTH=32
+      - SYNC_READ=true
+
+  #---------------------------------------
+  lint_ghdl_synth_ram_2r1w_16x8b_read_async :
+  #---------------------------------------
+    << : *lint_ghdl_synth
+    description     : Synthesis check of ram_2r1w, 16x8 bits, asynchronous read
+    toplevel        : asylum.ram_2r1w
+    parameters      :
+      - WIDTH=8
+      - DEPTH=16
+      - SYNC_READ=false
+
+  #---------------------------------------
+  lint_ghdl_synth_ram_2r1w_16x8b_read_sync :
+  #---------------------------------------
+    << : *lint_ghdl_synth
+    description     : Synthesis check of ram_2r1w, 16x8 bits, synchronous read
+    toplevel        : asylum.ram_2r1w
+    parameters      :
+      - WIDTH=8
+      - DEPTH=16
+      - SYNC_READ=true
+
+  #---------------------------------------
+  lint_ghdl_synth_ram_2r1w_256x8b_read_sync :
+  #---------------------------------------
+    << : *lint_ghdl_synth
+    description     : Synthesis check of ram_2r1w, 256x8 bits, synchronous read
+    toplevel        : asylum.ram_2r1w
+    parameters      :
+      - WIDTH=8
+      - DEPTH=256
+      - SYNC_READ=true
+
+  #---------------------------------------
+  lint_ghdl_synth_ram_1rw_32x32b_read_async :
+  #---------------------------------------
+    << : *lint_ghdl_synth
+    description     : Synthesis check of ram_1rw, 32x32 bits, asynchronous read (default generics)
+    toplevel        : asylum.ram_1rw
+    parameters      :
+      - WIDTH=32
+      - DEPTH=32
+      - SYNC_READ=false
+
+  #---------------------------------------
+  lint_ghdl_synth_ram_1rw_32x32b_read_sync :
+  #---------------------------------------
+    << : *lint_ghdl_synth
+    description     : Synthesis check of ram_1rw, 32x32 bits, synchronous read
+    toplevel        : asylum.ram_1rw
+    parameters      :
+      - WIDTH=32
+      - DEPTH=32
+      - SYNC_READ=true
+
+  #---------------------------------------
+  lint_ghdl_synth_ram_1rw_16x8b_read_async :
+  #---------------------------------------
+    << : *lint_ghdl_synth
+    description     : Synthesis check of ram_1rw, 16x8 bits, asynchronous read
+    toplevel        : asylum.ram_1rw
+    parameters      :
+      - WIDTH=8
+      - DEPTH=16
+      - SYNC_READ=false
+
+  #---------------------------------------
+  lint_ghdl_synth_ram_1rw_16x8b_read_sync :
+  #---------------------------------------
+    << : *lint_ghdl_synth
+    description     : Synthesis check of ram_1rw, 16x8 bits, synchronous read
+    toplevel        : asylum.ram_1rw
+    parameters      :
+      - WIDTH=8
+      - DEPTH=16
+      - SYNC_READ=true
+
+  #---------------------------------------
+  lint_ghdl_synth_ram_1rw_256x8b_read_sync :
+  #---------------------------------------
+    << : *lint_ghdl_synth
+    description     : Synthesis check of ram_1rw, 256x8 bits, synchronous read
+    toplevel        : asylum.ram_1rw
+    parameters      :
+      - WIDTH=8
+      - DEPTH=256
+      - SYNC_READ=true
+
+  #---------------------------------------
+  lint_ghdl_synth_sbi_ram_32x8b_read_async :
+  #---------------------------------------
+    << : *lint_ghdl_synth
+    description     : Synthesis check of sbi_ram (sbi_ram_wrapper), 32x8 bits, asynchronous read
+    toplevel        : asylum.sbi_ram_wrapper
+    parameters      :
+      - DEPTH=32
+      - SYNC_READ=false
+
+  #---------------------------------------
+  lint_ghdl_synth_sbi_ram_32x8b_read_sync :
+  #---------------------------------------
+    << : *lint_ghdl_synth
+    description     : Synthesis check of sbi_ram (sbi_ram_wrapper), 32x8 bits, synchronous read
+    toplevel        : asylum.sbi_ram_wrapper
+    parameters      :
+      - DEPTH=32
+      - SYNC_READ=true
+
+  #---------------------------------------
+  lint_ghdl_synth_sbi_ram_16x8b_read_async :
+  #---------------------------------------
+    << : *lint_ghdl_synth
+    description     : Synthesis check of sbi_ram (sbi_ram_wrapper), 16x8 bits, asynchronous read
+    toplevel        : asylum.sbi_ram_wrapper
+    parameters      :
+      - DEPTH=16
+      - SYNC_READ=false
+
+  #---------------------------------------
+  lint_ghdl_synth_sbi_ram_16x8b_read_sync :
+  #---------------------------------------
+    << : *lint_ghdl_synth
+    description     : Synthesis check of sbi_ram (sbi_ram_wrapper), 16x8 bits, synchronous read
+    toplevel        : asylum.sbi_ram_wrapper
+    parameters      :
+      - DEPTH=16
+      - SYNC_READ=true
+
+  #---------------------------------------
+  lint_ghdl_synth_sbi_ram_256x8b_read_sync :
+  #---------------------------------------
+    << : *lint_ghdl_synth
+    description     : Synthesis check of sbi_ram (sbi_ram_wrapper), 256x8 bits, synchronous read
+    toplevel        : asylum.sbi_ram_wrapper
+    parameters      :
+      - DEPTH=256
+      - SYNC_READ=true
+
+  #---------------------------------------
+  # Synthesis : size of one RAM with the generics of the target, Xilinx
+  # Artix-7 (LUT, LUTRAM, FF, BRAM, DSP) and sky130 (area, the memory
+  # becomes flip-flops), by Yosys and its GHDL plugin. Same configurations
+  # as lint_ghdl_synth_*.
+  # The pre_run hook (yosys_synth.sh of asylum:utils:yosys_synth) adds
+  # yosys_synth.mk to the edalize Makefile.
+  #---------------------------------------
+  syn_ram_1r1w_32x32b_read_async : &syn
+    << : *lint_ghdl
+    description     : Synthesis (Artix-7, sky130) of ram_1r1w, 32x32 bits, asynchronous read (default generics)
+    toplevel        : asylum.ram_1r1w
+    filesets_append : [syn, syn_yosys]
+    tools :
+      ghdl :
+        run_options     : ["--no-run"]
+    hooks :
+      pre_run : [yosys_synth]
+    parameters      :
+      - WIDTH=32
+      - DEPTH=32
+      - SYNC_READ=false
+
+  #---------------------------------------
+  syn_ram_1r1w_32x32b_read_sync :
+  #---------------------------------------
+    << : *syn
+    description     : Synthesis (Artix-7, sky130) of ram_1r1w, 32x32 bits, synchronous read
+    toplevel        : asylum.ram_1r1w
+    parameters      :
+      - WIDTH=32
+      - DEPTH=32
+      - SYNC_READ=true
+
+  #---------------------------------------
+  syn_ram_1r1w_16x8b_read_async :
+  #---------------------------------------
+    << : *syn
+    description     : Synthesis (Artix-7, sky130) of ram_1r1w, 16x8 bits, asynchronous read
+    toplevel        : asylum.ram_1r1w
+    parameters      :
+      - WIDTH=8
+      - DEPTH=16
+      - SYNC_READ=false
+
+  #---------------------------------------
+  syn_ram_1r1w_16x8b_read_sync :
+  #---------------------------------------
+    << : *syn
+    description     : Synthesis (Artix-7, sky130) of ram_1r1w, 16x8 bits, synchronous read
+    toplevel        : asylum.ram_1r1w
+    parameters      :
+      - WIDTH=8
+      - DEPTH=16
+      - SYNC_READ=true
+
+  #---------------------------------------
+  syn_ram_1r1w_256x8b_read_sync :
+  #---------------------------------------
+    << : *syn
+    description     : Synthesis (Artix-7, sky130) of ram_1r1w, 256x8 bits, synchronous read
+    toplevel        : asylum.ram_1r1w
+    parameters      :
+      - WIDTH=8
+      - DEPTH=256
+      - SYNC_READ=true
+
+  #---------------------------------------
+  syn_ram_2r1w_32x32b_read_async :
+  #---------------------------------------
+    << : *syn
+    description     : Synthesis (Artix-7, sky130) of ram_2r1w, 32x32 bits, asynchronous read (default generics)
+    toplevel        : asylum.ram_2r1w
+    parameters      :
+      - WIDTH=32
+      - DEPTH=32
+      - SYNC_READ=false
+
+  #---------------------------------------
+  syn_ram_2r1w_32x32b_read_sync :
+  #---------------------------------------
+    << : *syn
+    description     : Synthesis (Artix-7, sky130) of ram_2r1w, 32x32 bits, synchronous read
+    toplevel        : asylum.ram_2r1w
+    parameters      :
+      - WIDTH=32
+      - DEPTH=32
+      - SYNC_READ=true
+
+  #---------------------------------------
+  syn_ram_2r1w_16x8b_read_async :
+  #---------------------------------------
+    << : *syn
+    description     : Synthesis (Artix-7, sky130) of ram_2r1w, 16x8 bits, asynchronous read
+    toplevel        : asylum.ram_2r1w
+    parameters      :
+      - WIDTH=8
+      - DEPTH=16
+      - SYNC_READ=false
+
+  #---------------------------------------
+  syn_ram_2r1w_16x8b_read_sync :
+  #---------------------------------------
+    << : *syn
+    description     : Synthesis (Artix-7, sky130) of ram_2r1w, 16x8 bits, synchronous read
+    toplevel        : asylum.ram_2r1w
+    parameters      :
+      - WIDTH=8
+      - DEPTH=16
+      - SYNC_READ=true
+
+  #---------------------------------------
+  syn_ram_2r1w_256x8b_read_sync :
+  #---------------------------------------
+    << : *syn
+    description     : Synthesis (Artix-7, sky130) of ram_2r1w, 256x8 bits, synchronous read
+    toplevel        : asylum.ram_2r1w
+    parameters      :
+      - WIDTH=8
+      - DEPTH=256
+      - SYNC_READ=true
+
+  #---------------------------------------
+  syn_ram_1rw_32x32b_read_async :
+  #---------------------------------------
+    << : *syn
+    description     : Synthesis (Artix-7, sky130) of ram_1rw, 32x32 bits, asynchronous read (default generics)
+    toplevel        : asylum.ram_1rw
+    parameters      :
+      - WIDTH=32
+      - DEPTH=32
+      - SYNC_READ=false
+
+  #---------------------------------------
+  syn_ram_1rw_32x32b_read_sync :
+  #---------------------------------------
+    << : *syn
+    description     : Synthesis (Artix-7, sky130) of ram_1rw, 32x32 bits, synchronous read
+    toplevel        : asylum.ram_1rw
+    parameters      :
+      - WIDTH=32
+      - DEPTH=32
+      - SYNC_READ=true
+
+  #---------------------------------------
+  syn_ram_1rw_16x8b_read_async :
+  #---------------------------------------
+    << : *syn
+    description     : Synthesis (Artix-7, sky130) of ram_1rw, 16x8 bits, asynchronous read
+    toplevel        : asylum.ram_1rw
+    parameters      :
+      - WIDTH=8
+      - DEPTH=16
+      - SYNC_READ=false
+
+  #---------------------------------------
+  syn_ram_1rw_16x8b_read_sync :
+  #---------------------------------------
+    << : *syn
+    description     : Synthesis (Artix-7, sky130) of ram_1rw, 16x8 bits, synchronous read
+    toplevel        : asylum.ram_1rw
+    parameters      :
+      - WIDTH=8
+      - DEPTH=16
+      - SYNC_READ=true
+
+  #---------------------------------------
+  syn_ram_1rw_256x8b_read_sync :
+  #---------------------------------------
+    << : *syn
+    description     : Synthesis (Artix-7, sky130) of ram_1rw, 256x8 bits, synchronous read
+    toplevel        : asylum.ram_1rw
+    parameters      :
+      - WIDTH=8
+      - DEPTH=256
+      - SYNC_READ=true
+
+  #---------------------------------------
+  syn_sbi_ram_32x8b_read_async :
+  #---------------------------------------
+    << : *syn
+    description     : Synthesis (Artix-7, sky130) of sbi_ram (sbi_ram_wrapper), 32x8 bits, asynchronous read
+    toplevel        : asylum.sbi_ram_wrapper
+    parameters      :
+      - DEPTH=32
+      - SYNC_READ=false
+
+  #---------------------------------------
+  syn_sbi_ram_32x8b_read_sync :
+  #---------------------------------------
+    << : *syn
+    description     : Synthesis (Artix-7, sky130) of sbi_ram (sbi_ram_wrapper), 32x8 bits, synchronous read
+    toplevel        : asylum.sbi_ram_wrapper
+    parameters      :
+      - DEPTH=32
+      - SYNC_READ=true
+
+  #---------------------------------------
+  syn_sbi_ram_16x8b_read_async :
+  #---------------------------------------
+    << : *syn
+    description     : Synthesis (Artix-7, sky130) of sbi_ram (sbi_ram_wrapper), 16x8 bits, asynchronous read
+    toplevel        : asylum.sbi_ram_wrapper
+    parameters      :
+      - DEPTH=16
+      - SYNC_READ=false
+
+  #---------------------------------------
+  syn_sbi_ram_16x8b_read_sync :
+  #---------------------------------------
+    << : *syn
+    description     : Synthesis (Artix-7, sky130) of sbi_ram (sbi_ram_wrapper), 16x8 bits, synchronous read
+    toplevel        : asylum.sbi_ram_wrapper
+    parameters      :
+      - DEPTH=16
+      - SYNC_READ=true
+
+  #---------------------------------------
+  syn_sbi_ram_256x8b_read_sync :
+  #---------------------------------------
+    << : *syn
+    description     : Synthesis (Artix-7, sky130) of sbi_ram (sbi_ram_wrapper), 256x8 bits, synchronous read
+    toplevel        : asylum.sbi_ram_wrapper
+    parameters      :
       - DEPTH=256
       - SYNC_READ=true
 
@@ -331,6 +740,12 @@ scripts:
   ghdl_synth :
     cmd : [bash, ghdl_synth.sh]
 
+  #---------------------------------------
+  # pre_run hook of syn_* (cwd = work_root)
+  #---------------------------------------
+  yosys_synth :
+    cmd : [bash, yosys_synth.sh]
+
 parameters :
 
   TESTS_LIST :
@@ -340,19 +755,19 @@ parameters :
     paramtype   : generic
 
   WIDTH :
-    description : Word width
+    description : Word width (tb_ram, ram_1r1w, ram_2r1w, ram_1rw)
     datatype    : int
     default     : 8
     paramtype   : generic
 
   DEPTH :
-    description : Number of words (power of 2, >= 16 for the testbench)
+    description : Number of words, power of 2 (>= 16 for tb_ram)
     datatype    : int
     default     : 16
     paramtype   : generic
 
   SYNC_READ :
-    description : Synchronous (registered) read
+    description : Synchronous (registered) read, sbi_ram with one wait state
     datatype    : bool
     default     : false
     paramtype   : generic
