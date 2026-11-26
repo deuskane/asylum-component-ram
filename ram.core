@@ -38,6 +38,7 @@ filesets:
       - hdl/ram_1r1w.vhd
       - hdl/ram_2r1w.vhd
       - hdl/ram_1rw.vhd
+      - hdl/ram_2rw_2c.vhd
       - hdl/sbi_ram.vhd
     file_type    : vhdlSource-2008
     logical_name : asylum
@@ -117,7 +118,7 @@ targets:
   #---------------------------------------
   # Synthesis check : -Wall analysis, ghdl --synth -Wall and elaboration
   # (no simulation) of one RAM with the generics of the target : ram_1r1w,
-  # ram_2r1w and ram_1rw are their own toplevel, sbi_ram is in
+  # ram_2r1w, ram_1rw and ram_2rw_2c are their own toplevel, sbi_ram is in
   # sbi_ram_wrapper (flat SBI ports).
   # The pre_run hook (ghdl_synth.sh of asylum:utils:ghdl_synth) adds
   # ghdl_synth.mk to the edalize Makefile.
@@ -191,6 +192,26 @@ targets:
       - WIDTH=8
       - DEPTH=256
       - SYNC_READ=true
+
+  #---------------------------------------
+  lint_ghdl_synth_ram_2rw_2c_32x32b :
+  #---------------------------------------
+    << : *lint_ghdl_synth
+    description     : Synthesis check of ram_2rw_2c, 32x32 bits (default generics)
+    toplevel        : asylum.ram_2rw_2c
+    parameters      :
+      - WIDTH=32
+      - DEPTH=32
+
+  #---------------------------------------
+  lint_ghdl_synth_ram_2rw_2c_256x8b :
+  #---------------------------------------
+    << : *lint_ghdl_synth
+    description     : Synthesis check of ram_2rw_2c, 256x8 bits
+    toplevel        : asylum.ram_2rw_2c
+    parameters      :
+      - WIDTH=8
+      - DEPTH=256
 
   #---------------------------------------
   lint_ghdl_synth_sbi_ram_32x8b_read_async :
@@ -289,6 +310,26 @@ targets:
       - WIDTH=8
       - DEPTH=256
       - SYNC_READ=true
+
+  #---------------------------------------
+  syn_ram_2rw_2c_32x32b :
+  #---------------------------------------
+    << : *syn
+    description     : Synthesis (Artix-7, sky130) of ram_2rw_2c, 32x32 bits (default generics)
+    toplevel        : asylum.ram_2rw_2c
+    parameters      :
+      - WIDTH=32
+      - DEPTH=32
+
+  #---------------------------------------
+  syn_ram_2rw_2c_256x8b :
+  #---------------------------------------
+    << : *syn
+    description     : Synthesis (Artix-7, sky130) of ram_2rw_2c, 256x8 bits
+    toplevel        : asylum.ram_2rw_2c
+    parameters      :
+      - WIDTH=8
+      - DEPTH=256
 
   #---------------------------------------
   syn_sbi_ram_32x8b_read_async :
@@ -497,7 +538,7 @@ parameters :
     paramtype   : generic
 
   WIDTH :
-    description : Word width (tb_ram, ram_1r1w, ram_2r1w, ram_1rw)
+    description : Word width (tb_ram, ram_1r1w, ram_2r1w, ram_1rw, ram_2rw_2c)
     datatype    : int
     default     : 8
     paramtype   : generic

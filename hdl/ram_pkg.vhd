@@ -72,6 +72,31 @@ component ram_2r1w is
     );
 end component ram_2r1w;
 
+component ram_2rw_2c is
+  generic (
+    WIDTH        : natural := 32                                   -- Word width
+   ;DEPTH        : natural := 32                                   -- Number of words (power of 2)
+  );
+  port (
+    -- Port 0
+    clk0_i       : in  std_logic
+   ;cke0_i       : in  std_logic
+   ;cs0_i        : in  std_logic
+   ;we0_i        : in  std_logic
+   ;addr0_i      : in  std_logic_vector(log2(DEPTH) -1 downto 0)
+   ;wdata0_i     : in  std_logic_vector(WIDTH       -1 downto 0)
+   ;rdata0_o     : out std_logic_vector(WIDTH       -1 downto 0)
+    -- Port 1
+   ;clk1_i       : in  std_logic
+   ;cke1_i       : in  std_logic
+   ;cs1_i        : in  std_logic
+   ;we1_i        : in  std_logic
+   ;addr1_i      : in  std_logic_vector(log2(DEPTH) -1 downto 0)
+   ;wdata1_i     : in  std_logic_vector(WIDTH       -1 downto 0)
+   ;rdata1_o     : out std_logic_vector(WIDTH       -1 downto 0)
+  );
+end component ram_2rw_2c;
+
 component sbi_ram is
     generic (
         NAME       : string  := "";
