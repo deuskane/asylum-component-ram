@@ -330,6 +330,8 @@ With `SYNC_READ = false` the read data are checked on every cycle (no registered
 | `read_during_write` | 28 | The read port reads the same address on every cycle while the write port writes every other address (old word), then the new words read back |
 | `enables` | 5 | `cke0 = 0` or `we0 = 0` blocks the write; `cke1 = 0` or `re1 = 0` holds `rdata1_o` |
 
+The two-clock testbenches were checked with RTL mutants (scratch copies), each scenario of the reference configuration run alone: `ram_2rw_2c` 11 (a write of either port ignored, write-first, `cke1` or `cs0` ignored, address or read data of the other port, port 1 on `clk0`, read during the port's own write, address bit dropped, extra write), `ram_1r1w_2c` 7 (`we0` or `cke0` ignored, `re1` or `cke1` ignored, read port on `clk0`, write port on `clk1`, read at the write address): every mutant is killed (the read port on the wrong clock by the monitor of the read data).
+
 ### Targets
 
 | Target | Toplevel | Description |
