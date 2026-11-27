@@ -128,7 +128,14 @@ filesets:
   #---------------------------------------
   syn_yosys:
     depend       :
-      # 1.1.1 : memories written on two clocks (ram_2rw_2c)
+      - asylum:utils:yosys_synth
+
+  #---------------------------------------
+  # syn_ram_2rw_2c_* only : a memory written on two clocks needs
+  # yosys_synth >= 1.1.1 (write priority cleared after the GHDL import)
+  #---------------------------------------
+  syn_yosys_2w:
+    depend       :
       - ">=asylum:utils:yosys_synth:1.1.1"
 
 targets:
@@ -377,6 +384,7 @@ targets:
   #---------------------------------------
     << : *syn
     description     : Synthesis (Artix-7, sky130) of ram_2rw_2c, 32x32 bits (default generics)
+    filesets_append : [syn, syn_yosys, syn_yosys_2w]
     toplevel        : asylum.ram_2rw_2c
     parameters      :
       - WIDTH=32
@@ -387,6 +395,7 @@ targets:
   #---------------------------------------
     << : *syn
     description     : Synthesis (Artix-7, sky130) of ram_2rw_2c, 256x8 bits
+    filesets_append : [syn, syn_yosys, syn_yosys_2w]
     toplevel        : asylum.ram_2rw_2c
     parameters      :
       - WIDTH=8
