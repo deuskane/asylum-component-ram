@@ -1,11 +1,15 @@
 default                                    : Default Target
 lint_ghdl                                  : Lint with GHDL (-Wall analysis of all the RAMs, elaboration of sbi_ram_wrapper)
 lint_ghdl_synth_ram_1r1w_256x8b_read_sync  : Synthesis check of ram_1r1w, 256x8 bits, synchronous read
+lint_ghdl_synth_ram_1r1w_2c_256x8b         : Synthesis check of ram_1r1w_2c, 256x8 bits
+lint_ghdl_synth_ram_1r1w_2c_32x32b         : Synthesis check of ram_1r1w_2c, 32x32 bits (default generics)
 lint_ghdl_synth_ram_1r1w_32x32b_read_async : Synthesis check of ram_1r1w, 32x32 bits, asynchronous read (default generics)
 lint_ghdl_synth_ram_1rw_256x8b_read_sync   : Synthesis check of ram_1rw, 256x8 bits, synchronous read
 lint_ghdl_synth_ram_1rw_32x32b_read_async  : Synthesis check of ram_1rw, 32x32 bits, asynchronous read (default generics)
 lint_ghdl_synth_ram_2r1w_256x8b_read_sync  : Synthesis check of ram_2r1w, 256x8 bits, synchronous read
 lint_ghdl_synth_ram_2r1w_32x32b_read_async : Synthesis check of ram_2r1w, 32x32 bits, asynchronous read (default generics)
+lint_ghdl_synth_ram_2rw_2c_256x8b          : Synthesis check of ram_2rw_2c, 256x8 bits
+lint_ghdl_synth_ram_2rw_2c_32x32b          : Synthesis check of ram_2rw_2c, 32x32 bits (default generics)
 lint_ghdl_synth_sbi_ram_256x8b_read_sync   : Synthesis check of sbi_ram (sbi_ram_wrapper), 256x8 bits, synchronous read
 lint_ghdl_synth_sbi_ram_32x8b_read_async   : Synthesis check of sbi_ram (sbi_ram_wrapper), 32x8 bits, asynchronous read
 sim_16x8b_async_read                       : All RAMs and sbi_ram, asynchronous read (WIDTH=8, DEPTH=16), every scenario
@@ -19,14 +23,36 @@ sim_16x8b_sync_read_sbi_name               : All RAMs and sbi_ram, synchronous r
 sim_16x8b_sync_read_sbi_write_read         : All RAMs and sbi_ram, synchronous read (WIDTH=8, DEPTH=16), scenario sbi_write_read
 sim_16x8b_sync_read_write_enable           : All RAMs and sbi_ram, synchronous read (WIDTH=8, DEPTH=16), scenario write_enable
 sim_16x8b_sync_read_write_read             : All RAMs and sbi_ram, synchronous read (WIDTH=8, DEPTH=16), scenario write_read
+sim_1r1w_2c_16x8b                          : ram_1r1w_2c (WIDTH=8, DEPTH=16), clk0 10 ns, clk1 13 ns - build only (scenarios of TESTS_LIST)
+sim_1r1w_2c_16x8b_concurrent               : ram_1r1w_2c (WIDTH=8, DEPTH=16), clk0 10 ns, clk1 13 ns - both ports busy at the same time on their clocks, every word read after its write
+sim_1r1w_2c_16x8b_enables                  : ram_1r1w_2c (WIDTH=8, DEPTH=16), clk0 10 ns, clk1 13 ns - cke0 / we0 block the write, cke1 / re1 block the read (rdata held)
+sim_1r1w_2c_16x8b_read_during_write        : ram_1r1w_2c (WIDTH=8, DEPTH=16), clk0 10 ns, clk1 13 ns - the read port reads the same word on every cycle while the write port writes every other address
+sim_1r1w_2c_16x8b_read_fast                : ram_1r1w_2c (WIDTH=8, DEPTH=16), clk0 23 ns, clk1 7 ns (read faster), every scenario
+sim_1r1w_2c_16x8b_write_read               : ram_1r1w_2c (WIDTH=8, DEPTH=16), clk0 10 ns, clk1 13 ns - every address written on clk0, read back on clk1, two patterns
+sim_1r1w_2c_2x8b_same_clock                : ram_1r1w_2c (WIDTH=8, DEPTH=2), same clock period (10 ns, edges together), every scenario
+sim_1r1w_2c_64x32b_write_fast              : ram_1r1w_2c (WIDTH=32, DEPTH=64), clk0 7 ns, clk1 23 ns (write faster), every scenario
+sim_2rw_2c_16x8b                           : ram_2rw_2c (WIDTH=8, DEPTH=16), clk0 10 ns, clk1 13 ns - build only (scenarios of TESTS_LIST)
+sim_2rw_2c_16x8b_concurrent                : ram_2rw_2c (WIDTH=8, DEPTH=16), clk0 10 ns, clk1 13 ns - both ports busy at the same time on their own clocks (writes, then reads of the words of the other port)
+sim_2rw_2c_16x8b_cross                     : ram_2rw_2c (WIDTH=8, DEPTH=16), clk0 10 ns, clk1 13 ns - words written by one port read back by the other (other clock), both directions
+sim_2rw_2c_16x8b_enables                   : ram_2rw_2c (WIDTH=8, DEPTH=16), clk0 10 ns, clk1 13 ns - cke and cs block the accesses, rdata held by a write and between reads, each port
+sim_2rw_2c_16x8b_port0                     : ram_2rw_2c (WIDTH=8, DEPTH=16), clk0 10 ns, clk1 13 ns - port 0 alone, every address written then read back
+sim_2rw_2c_16x8b_port1                     : ram_2rw_2c (WIDTH=8, DEPTH=16), clk0 10 ns, clk1 13 ns - port 1 alone, every address written then read back
+sim_2rw_2c_16x8b_port1_fast                : ram_2rw_2c (WIDTH=8, DEPTH=16), clk0 23 ns, clk1 7 ns (port 1 faster), every scenario
+sim_2rw_2c_16x8b_read_during_write         : ram_2rw_2c (WIDTH=8, DEPTH=16), clk0 10 ns, clk1 13 ns - one port reads the same word on every cycle while the other writes every other address, both directions
+sim_2rw_2c_2x8b_same_clock                 : ram_2rw_2c (WIDTH=8, DEPTH=2), same clock period (10 ns, edges together), every scenario
+sim_2rw_2c_64x32b_port0_fast               : ram_2rw_2c (WIDTH=32, DEPTH=64), clk0 7 ns, clk1 23 ns (port 0 faster), every scenario
 sim_64x32b_async_read                      : All RAMs and sbi_ram, asynchronous read (WIDTH=32, DEPTH=64), every scenario
 sim_64x32b_sync_read                       : All RAMs and sbi_ram, synchronous read (WIDTH=32, DEPTH=64), every scenario
 syn_ram_1r1w_256x8b_read_sync              : Synthesis (Artix-7, sky130) of ram_1r1w, 256x8 bits, synchronous read
+syn_ram_1r1w_2c_256x8b                     : Synthesis (Artix-7, sky130) of ram_1r1w_2c, 256x8 bits
+syn_ram_1r1w_2c_32x32b                     : Synthesis (Artix-7, sky130) of ram_1r1w_2c, 32x32 bits (default generics)
 syn_ram_1r1w_32x32b_read_async             : Synthesis (Artix-7, sky130) of ram_1r1w, 32x32 bits, asynchronous read (default generics)
 syn_ram_1rw_256x8b_read_sync               : Synthesis (Artix-7, sky130) of ram_1rw, 256x8 bits, synchronous read
 syn_ram_1rw_32x32b_read_async              : Synthesis (Artix-7, sky130) of ram_1rw, 32x32 bits, asynchronous read (default generics)
 syn_ram_2r1w_256x8b_read_sync              : Synthesis (Artix-7, sky130) of ram_2r1w, 256x8 bits, synchronous read
 syn_ram_2r1w_32x32b_read_async             : Synthesis (Artix-7, sky130) of ram_2r1w, 32x32 bits, asynchronous read (default generics)
+syn_ram_2rw_2c_256x8b                      : Synthesis (Artix-7, sky130) of ram_2rw_2c, 256x8 bits
+syn_ram_2rw_2c_32x32b                      : Synthesis (Artix-7, sky130) of ram_2rw_2c, 32x32 bits (default generics)
 syn_sbi_ram_256x8b_read_sync               : Synthesis (Artix-7, sky130) of sbi_ram (sbi_ram_wrapper), 256x8 bits, synchronous read
 syn_sbi_ram_32x8b_read_async               : Synthesis (Artix-7, sky130) of sbi_ram (sbi_ram_wrapper), 32x8 bits, asynchronous read
 
