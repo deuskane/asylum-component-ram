@@ -90,6 +90,25 @@ filesets:
       - ">=asylum:utils:pkg:1.10.0"
 
   #---------------------------------------
+  # Testbench of ram_1r1w_2c (two clocks), one package per scenario, port
+  # helpers of tb_ram_2rw_2c_bfm_pkg
+  #---------------------------------------
+  files_sim_1r1w_2c:
+    files:
+      - sim/ram_2rw_2c/tb_ram_2rw_2c_bfm_pkg.vhd
+      - sim/ram_1r1w_2c/tb_ram_1r1w_2c_write_read_pkg.vhd
+      - sim/ram_1r1w_2c/tb_ram_1r1w_2c_concurrent_pkg.vhd
+      - sim/ram_1r1w_2c/tb_ram_1r1w_2c_read_during_write_pkg.vhd
+      - sim/ram_1r1w_2c/tb_ram_1r1w_2c_enables_pkg.vhd
+      - sim/ram_1r1w_2c/tb_ram_1r1w_2c_tests_pkg.vhd
+      - sim/ram_1r1w_2c/tb_ram_1r1w_2c.vhd
+    file_type : vhdlSource-2008
+    depend    :
+      - bitvis:verification:uvvm
+      # string_pkg list_length / list_item / list_contains (TESTS_LIST)
+      - ">=asylum:utils:pkg:1.10.0"
+
+  #---------------------------------------
   # Lint / synthesis check : wrapper of sbi_ram, and ghdl_synth.sh /
   # ghdl_synth.mk (pre_run hook of lint_ghdl_synth_*) of
   # asylum:utils:ghdl_synth, a core without dependency (ram cannot depend
@@ -717,6 +736,120 @@ targets:
       - CLK0_PERIOD=10
       - CLK1_PERIOD=10
 
+  #---------------------------------------
+  # tb_ram_1r1w_2c : compiled once per configuration (WIDTH, DEPTH),
+  # clock periods and scenarios chosen at run time. Reference
+  # configuration : 16x8 bits, clk0 10 ns, clk1 13 ns (unrelated clocks) :
+  # sim_1r1w_2c_16x8b (build only) and one sim_1r1w_2c_16x8b_<test> target
+  # per scenario ; the other configurations run the whole list. Generated.
+  #---------------------------------------
+  sim_1r1w_2c_16x8b: &sim_ram_1r1w_2c
+    << : *default
+    description     : ram_1r1w_2c (WIDTH=8, DEPTH=16), clk0 10 ns, clk1 13 ns - build only (scenarios of TESTS_LIST)
+    filesets_append :
+      - files_sim_1r1w_2c
+    toplevel        : tb_ram_1r1w_2c
+    parameters      :
+      - TESTS_LIST
+      - WIDTH=8
+      - DEPTH=16
+      - CLK0_PERIOD=10
+      - CLK1_PERIOD=13
+    default_tool    : ghdl
+    tools :
+      ghdl :
+        analyze_options :
+          - "$(GHDL_ANALYZE_OPTION)"
+          - "-Wall"
+          - "-frelaxed"
+        run_options     :
+          - "$(GHDL_RUN_OPTION)"
+          - "--ieee-asserts=disable"
+
+  #---------------------------------------
+  sim_1r1w_2c_16x8b_write_read:
+  #---------------------------------------
+    << : *sim_ram_1r1w_2c
+    description     : ram_1r1w_2c (WIDTH=8, DEPTH=16), clk0 10 ns, clk1 13 ns - every address written on clk0, read back on clk1, two patterns
+    parameters      :
+      - TESTS_LIST=write_read
+      - WIDTH=8
+      - DEPTH=16
+      - CLK0_PERIOD=10
+      - CLK1_PERIOD=13
+
+  #---------------------------------------
+  sim_1r1w_2c_16x8b_concurrent:
+  #---------------------------------------
+    << : *sim_ram_1r1w_2c
+    description     : ram_1r1w_2c (WIDTH=8, DEPTH=16), clk0 10 ns, clk1 13 ns - both ports busy at the same time on their clocks, every word read after its write
+    parameters      :
+      - TESTS_LIST=concurrent
+      - WIDTH=8
+      - DEPTH=16
+      - CLK0_PERIOD=10
+      - CLK1_PERIOD=13
+
+  #---------------------------------------
+  sim_1r1w_2c_16x8b_read_during_write:
+  #---------------------------------------
+    << : *sim_ram_1r1w_2c
+    description     : ram_1r1w_2c (WIDTH=8, DEPTH=16), clk0 10 ns, clk1 13 ns - the read port reads the same word on every cycle while the write port writes every other address
+    parameters      :
+      - TESTS_LIST=read_during_write
+      - WIDTH=8
+      - DEPTH=16
+      - CLK0_PERIOD=10
+      - CLK1_PERIOD=13
+
+  #---------------------------------------
+  sim_1r1w_2c_16x8b_enables:
+  #---------------------------------------
+    << : *sim_ram_1r1w_2c
+    description     : ram_1r1w_2c (WIDTH=8, DEPTH=16), clk0 10 ns, clk1 13 ns - cke0 / we0 block the write, cke1 / re1 block the read (rdata held)
+    parameters      :
+      - TESTS_LIST=enables
+      - WIDTH=8
+      - DEPTH=16
+      - CLK0_PERIOD=10
+      - CLK1_PERIOD=13
+
+  #---------------------------------------
+  sim_1r1w_2c_64x32b_write_fast:
+  #---------------------------------------
+    << : *sim_ram_1r1w_2c
+    description     : ram_1r1w_2c (WIDTH=32, DEPTH=64), clk0 7 ns, clk1 23 ns (write faster), every scenario
+    parameters      :
+      - TESTS_LIST=write_read,concurrent,read_during_write,enables
+      - WIDTH=32
+      - DEPTH=64
+      - CLK0_PERIOD=7
+      - CLK1_PERIOD=23
+
+  #---------------------------------------
+  sim_1r1w_2c_16x8b_read_fast:
+  #---------------------------------------
+    << : *sim_ram_1r1w_2c
+    description     : ram_1r1w_2c (WIDTH=8, DEPTH=16), clk0 23 ns, clk1 7 ns (read faster), every scenario
+    parameters      :
+      - TESTS_LIST=write_read,concurrent,read_during_write,enables
+      - WIDTH=8
+      - DEPTH=16
+      - CLK0_PERIOD=23
+      - CLK1_PERIOD=7
+
+  #---------------------------------------
+  sim_1r1w_2c_2x8b_same_clock:
+  #---------------------------------------
+    << : *sim_ram_1r1w_2c
+    description     : ram_1r1w_2c (WIDTH=8, DEPTH=2), same clock period (10 ns, edges together), every scenario
+    parameters      :
+      - TESTS_LIST=write_read,concurrent,read_during_write,enables
+      - WIDTH=8
+      - DEPTH=2
+      - CLK0_PERIOD=10
+      - CLK1_PERIOD=10
+
 scripts:
 
   #---------------------------------------
@@ -758,13 +891,13 @@ parameters :
     paramtype   : generic
 
   CLK0_PERIOD :
-    description : Period of the clock of port 0 of ram_2rw_2c in tb_ram_2rw_2c, ns
+    description : Period of the clock of port 0 (tb_ram_2rw_2c) or of the write port (tb_ram_1r1w_2c), ns
     datatype    : int
     default     : 10
     paramtype   : generic
 
   CLK1_PERIOD :
-    description : Period of the clock of port 1 of ram_2rw_2c in tb_ram_2rw_2c, ns
+    description : Period of the clock of port 1 (tb_ram_2rw_2c) or of the read port (tb_ram_1r1w_2c), ns
     datatype    : int
     default     : 13
     paramtype   : generic
