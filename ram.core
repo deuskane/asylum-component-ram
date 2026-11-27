@@ -22,9 +22,13 @@ CAPI=2:
 # 2026-10-05  1.2.3    mrosiere Remove unused std.textio, assert DEPTH power of 2
 #                               UVVM testbench of all the RAMs (replaces
 #                               tb_ram_1r1w), targets use WIDTH/DEPTH/SYNC_READ
+# 2026-11-27  1.3.0    mrosiere Add ram_1r1w_2c (simple dual-port RAM, one
+#                               clock per port) and ram_2rw_2c (true dual-port
+#                               RAM, one clock per port), their testbenches ;
+#                               syn_ram_2rw_2c_* on yosys_synth >= 1.1.1
 #-----------------------------------------------------------------------------
 
-name        : asylum:component:ram:1.2.3
+name        : asylum:component:ram:1.3.0
 description : RAM with 1 read port and 1 write port
 
 filesets:

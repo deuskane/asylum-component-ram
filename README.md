@@ -377,13 +377,13 @@ To run a list of scenarios, build the testbench once, then run the list without 
 
 ```bash
 make sim_16x8b_sync_read                     # build and elaboration (TESTS_LIST empty)
-fusesoc --cores-root . run --build-root build --no-export --run --target sim_16x8b_sync_read asylum:component:ram:1.2.3 --TESTS_LIST=random,write_read
+fusesoc --cores-root . run --build-root build --no-export --run --target sim_16x8b_sync_read asylum:component:ram:1.3.0 --TESTS_LIST=random,write_read
 ```
 
 or in the build directory of the target. `EXTRA_OPTIONS` replaces every generic set by the target: repeat the generics of the configuration, else their default values apply:
 
 ```bash
-cd build/asylum_component_ram_1.2.3/sim_16x8b_sync_read-ghdl
+cd build/asylum_component_ram_1.3.0/sim_16x8b_sync_read-ghdl
 make run EXTRA_OPTIONS="-gTESTS_LIST=random,write_read -gWIDTH=8 -gDEPTH=16 -gSYNC_READ=true"
 ```
 
