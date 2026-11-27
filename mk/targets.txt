@@ -1,6 +1,8 @@
 default                                    : Default Target
 lint_ghdl                                  : Lint with GHDL (-Wall analysis of all the RAMs, elaboration of sbi_ram_wrapper)
 lint_ghdl_synth_ram_1r1w_256x8b_read_sync  : Synthesis check of ram_1r1w, 256x8 bits, synchronous read
+lint_ghdl_synth_ram_1r1w_2c_256x8b         : Synthesis check of ram_1r1w_2c, 256x8 bits
+lint_ghdl_synth_ram_1r1w_2c_32x32b         : Synthesis check of ram_1r1w_2c, 32x32 bits (default generics)
 lint_ghdl_synth_ram_1r1w_32x32b_read_async : Synthesis check of ram_1r1w, 32x32 bits, asynchronous read (default generics)
 lint_ghdl_synth_ram_1rw_256x8b_read_sync   : Synthesis check of ram_1rw, 256x8 bits, synchronous read
 lint_ghdl_synth_ram_1rw_32x32b_read_async  : Synthesis check of ram_1rw, 32x32 bits, asynchronous read (default generics)
@@ -34,6 +36,8 @@ sim_2rw_2c_64x32b_port0_fast               : ram_2rw_2c (WIDTH=32, DEPTH=64), cl
 sim_64x32b_async_read                      : All RAMs and sbi_ram, asynchronous read (WIDTH=32, DEPTH=64), every scenario
 sim_64x32b_sync_read                       : All RAMs and sbi_ram, synchronous read (WIDTH=32, DEPTH=64), every scenario
 syn_ram_1r1w_256x8b_read_sync              : Synthesis (Artix-7, sky130) of ram_1r1w, 256x8 bits, synchronous read
+syn_ram_1r1w_2c_256x8b                     : Synthesis (Artix-7, sky130) of ram_1r1w_2c, 256x8 bits
+syn_ram_1r1w_2c_32x32b                     : Synthesis (Artix-7, sky130) of ram_1r1w_2c, 32x32 bits (default generics)
 syn_ram_1r1w_32x32b_read_async             : Synthesis (Artix-7, sky130) of ram_1r1w, 32x32 bits, asynchronous read (default generics)
 syn_ram_1rw_256x8b_read_sync               : Synthesis (Artix-7, sky130) of ram_1rw, 256x8 bits, synchronous read
 syn_ram_1rw_32x32b_read_async              : Synthesis (Artix-7, sky130) of ram_1rw, 32x32 bits, asynchronous read (default generics)
