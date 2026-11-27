@@ -20,9 +20,14 @@
 --              * write on both : port 1 wins in simulation (last
 --                assignment of the process) ; undefined on a block RAM
 --              * read on one, write on the other : the read returns the
---                old word in simulation ; undefined on a block RAM
---              The user avoids these collisions (e.g. fifo_async never reads
---              a word that is being written).
+--                old word in simulation ; on a block RAM the read data are
+--                undefined (and may be metastable : the write -> read
+--                register path crosses the clock domains), the word written
+--                is kept only if the write port does not read (no change
+--                mode, as here)
+--              The user avoids these collisions, or discards the read data.
+--              A single writer with a reader on another clock is
+--              ram_1r1w_2c (simpler, the template every tool infers).
 --              DEPTH is a power of 2.
 -------------------------------------------------------------------------------
 -- Copyright (c) 2026
@@ -30,6 +35,7 @@
 -- Revisions  :
 -- Date        Version  Author   Description
 -- 2026-11-26  1.0      mrosiere Created
+-- 2026-11-27  1.1      mrosiere Collisions : comment
 -------------------------------------------------------------------------------
 
 library ieee;
