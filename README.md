@@ -207,7 +207,7 @@ Figures of the `syn_*` targets (`make nonreg_syn`, see [Targets](#targets)): eac
 
 ³ Area in thousands of NAND2 gate equivalents (`sky130_fd_sc_hd__nand2_1` = 3.7536 µm²).
 
-⁴ `ram_2rw_2c`: on Artix-7 the memory is one true dual-port block RAM (`RAMB18E1` for 256x8, `RAMB36E1` for 32x32, the BRAM column counts RAMB36 equivalents), its two ports on the two clocks; the 4 LUTs are the `INV` / enables of the ports. In the sky130 flow a memory written on two clocks cannot become flip-flops (a flip-flop has one clock): it needs a dual-port SRAM macro, which the flow does not have, so the memory stays a `$mem_v2` cell of unknown area (no figure). These two targets need a change of the `yosys_synth` flow of [asylum-utils-generators](https://github.com/deuskane/asylum-utils-generators) (the GHDL plugin gives the second write port a priority over the first one, which Yosys 0.33 only accepts between ports of the same clock): until it is released and imported, they fail in the CI.
+⁴ `ram_2rw_2c`: on Artix-7 the memory is one true dual-port block RAM (`RAMB18E1` for 256x8, `RAMB36E1` for 32x32, the BRAM column counts RAMB36 equivalents), its two ports on the two clocks; the 4 LUTs are the `INV` / enables of the ports. In the sky130 flow a memory written on two clocks cannot become flip-flops (a flip-flop has one clock): it needs a dual-port SRAM macro, which the flow does not have, so the memory stays a `$mem_v2` cell of unknown area (no figure). The GHDL plugin gives the second write port a priority over the first one, which Yosys 0.33 only accepts between ports of the same clock: the `syn_*` targets need `asylum:utils:yosys_synth` >= 1.1.1 of [asylum-utils-generators](https://github.com/deuskane/asylum-utils-generators), which clears this priority after the GHDL import.
 
 ## Theory of Operation
 
@@ -366,7 +366,7 @@ Outside the CI, GHDL writes a waveform `dut.fst`.
 |------|------------|---------|
 | `asylum:utils:pkg` | [asylum-utils-pkg](https://github.com/deuskane/asylum-utils-pkg) | `math_pkg` (`log2`), `sbi_pkg` (SBI records, `to_sbi_name`); the testbench needs >= 1.10.0 (`string_pkg` lists of `TESTS_LIST`) |
 | `asylum:utils:ghdl_synth` | [asylum-utils-generators](https://github.com/deuskane/asylum-utils-generators) | `ghdl --synth` check of the `lint_ghdl_synth_*` targets |
-| `asylum:utils:yosys_synth` | [asylum-utils-generators](https://github.com/deuskane/asylum-utils-generators) | Yosys synthesis of the `syn_*` targets (Artix-7 and sky130) |
+| `asylum:utils:yosys_synth` | [asylum-utils-generators](https://github.com/deuskane/asylum-utils-generators) | Yosys synthesis of the `syn_*` targets (Artix-7 and sky130), >= 1.1.1 (memories written on two clocks) |
 | `bitvis:verification:uvvm` | [UVVM](https://github.com/UVVM/UVVM) | Verification library and SBI BFM |
 
 The synthesis checks use the dependency-free cores `ghdl_synth` and `yosys_synth`, not `asylum:utils:generators`: the generators depend on the FIFO, which depends on this IP.

@@ -108,7 +108,8 @@ filesets:
   #---------------------------------------
   syn_yosys:
     depend       :
-      - asylum:utils:yosys_synth
+      # 1.1.1 : memories written on two clocks (ram_2rw_2c)
+      - ">=asylum:utils:yosys_synth:1.1.1"
 
 targets:
 
